@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_preferences"
+        app:showAsAction="never"
+        android:orderInCategory="100"
+        android:title="@string/action_preferences" />
+
+    <!--app:actionViewClass="android.widget.Spinner"-->
+
+    <item
+        android:id="@+id/action_most_popular"
+        app:showAsAction="never"
+        android:orderInCategory="101"
+        android:title="@string/sort_popularity"/>
+    <item
+        android:id="@+id/action_highest_rated"
+        app:showAsAction="never"
+        android:orderInCategory="102"
+        android:title="@string/sort_highest_rated"/>
+
+    <item
+        android:id="@+id/action_average_rating"
+        app:showAsAction="never"
+        android:orderInCategory="103"
+        android:title="@string/sort_average_rating"/>
+</menu>

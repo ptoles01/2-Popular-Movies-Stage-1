@@ -1,0 +1,90 @@
+<resources>
+    <!-- name -->
+
+    <string name="app_name">Popular Movies</string>
+    <string name= "menu_preferences">Preferences</string>
+    <string name= "sort_order">Sort Order</string>
+
+
+    <string name= "poster_image_content_description"> Default poster content description</string>
+    <string name= "error_while_closing">An Error Occurred while closing</string>
+    <string name= "sort_pop">Popular Movies</string>
+
+
+    <string name= "connect">Connectivity Issues</string>
+
+    <string name="grid_focusable">true</string>
+    <string name="grid_clickable">true</string>
+    <string name="hello" />
+
+
+    <!-- empty state value -->
+    <string name="no_movies_available">No movies available!</string>
+
+    <!-- used by DetailActivity -->
+    <string name="released">Released: </string>
+    <string name="rating">Viewer rating: </string>
+
+    <!-- settings menu option -->
+    <string name="action_settings">Settings</string>
+    <string name="action_highest_rated">Highest Rated</string>
+    <string name="action_most_popular">Most Popular</string>
+    <string name="action_average_rated">Average Rated</string>
+
+    <!-- preferences menu option -->
+    <string name="action_preferences">Preferences</string>
+
+
+
+    <!-- - - - - - - - - - - -->
+    <!--Used by SharedPreferences-->
+    <!-- - - - - - - - - - - -->
+
+    <!-- labels for ListPreferences -->
+    <string name="pref_sort_order">Sort Order</string>
+    <string name="pref_label_most_popular">Most Popular</string>
+    <string name="pref_label_highest_rated">Highest Rated</string>
+
+    <!-- key name for sort preference in SharedPreferences [CHAR LIMIT=NONE] -->
+    <string name="sort_order_key" translatable="false">sortOrder</string>
+    <!-- value in SharedPreferences for most popular option-->
+    <string name="pref_most_popular_key" translatable="false">popular</string>
+    <!-- value in SharedPreferences for highest rated option [CHAR LIMIT=NONE] -->
+    <string name="pref_highest_rated_key" translatable="false">top_rated</string>
+
+    <string name= "sort_most_pop">Most Popular Movies</string>
+    <string name= "sort_top_rated">Top Rated Movies</string>
+
+    <string name= "sort_method_key">Sort Method Key</string>
+    <string name= "sort_pop_dec" >Sort Popularity</string>
+    <string name= "sort_avg_dec" >Sort Average</string>
+    <string name= "sort_popularity">Popularity</string>
+    <string name= "sort_average_rating">Average Rating</string>
+
+    <string name= "sort_highest_rated">Popularity</string>
+
+    <string name= "sort_rating">Top Rated</string>
+
+    <string name= "movie_parcel">PARCEL_MOVIE</string>
+
+    <string name= "sort_popularity_hint">Sort by popularity</string>
+    <string name= "sort_average_rating_hint">Sort by average rating</string>
+    <string name= "sort_favorite_hint">Sort by favorite</string>
+
+
+
+    <dimen name="grid_column_width">100dp</dimen>
+    <dimen name="grid_bottom_margin">10dp</dimen>
+    <dimen name="grid_top_margin">10dp</dimen>
+    <dimen name="grid_start_margin">10dp</dimen>
+    <dimen name="grid_end_margin">10dp</dimen>
+
+    <dimen name="main_bottom_margin">10dp</dimen>
+    <dimen name="main_top_margin">10dp</dimen>
+    <dimen name="main_start_margin">10dp</dimen>
+    <dimen name="main_end_margin">10dp</dimen>
+
+
+
+
+</resources>
