@@ -53,13 +53,13 @@ public class MoviePoster implements Parcelable{
                        String overview,         String releaseDate
     )
     {
-    this.voteCount     = getVoteCount();           this.id               = getId();
-    this.video         = getVideo();               this.voteAverage      = getVoteAverage();
-    this.title         = getTitle();               this.popularity       = getPopularity();
-    this.posterPath    = getPosterPath();          this.originalLanguage = getOriginalLanguage();
-    this.originalTitle = getOriginalTitle();       this.genreIDs         = getGenreIDs();
-    this.backdropPath  = getBackdropPath();        this.adult            = isAdult();
-    this.overview      = getOverview();            this.releaseDate      = getReleaseDate();
+    this.voteCount     = voteCount;             this.id               = id;
+    this.video         = video;                 this.voteAverage      = voteAverage;
+    this.title         = title;                 this.popularity       = popularity;
+    this.posterPath    = posterPath;            this.originalLanguage = originalLanguage;
+    this.originalTitle = originalTitle;         this.genreIDs         = genreIDs;
+    this.backdropPath  = backdropPath;          this.adult            = adult;
+    this.overview      = overview;              this.releaseDate      = releaseDate;
 
 
     }
