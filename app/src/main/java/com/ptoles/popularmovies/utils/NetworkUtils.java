@@ -5,8 +5,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 
-import com.ptoles.popularmovies.MainActivity;
-
 import java.util.Objects;
 
 public class NetworkUtils {
@@ -15,9 +13,8 @@ public class NetworkUtils {
      // Return: true if connected to the internet
      //         false if not connected to the internet
      */
-    private static NetworkUtils instance = new NetworkUtils();
-    static Context context;
-    static boolean  connected = false;
+    private  static final NetworkUtils instance = new NetworkUtils();
+    private  static Context context;
 
     public static NetworkUtils getInstance(Context ctx) {
         context = ctx.getApplicationContext();
@@ -25,6 +22,7 @@ public class NetworkUtils {
     }
 
     public static boolean isNetworkAvailable() {
+        boolean connected = false;
         try {
             ConnectivityManager connectivityManager
                     = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);

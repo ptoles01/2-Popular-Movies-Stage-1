@@ -30,11 +30,37 @@
     <string name="action_highest_rated">Highest Rated</string>
     <string name="action_most_popular">Most Popular</string>
     <string name="action_average_rated">Average Rated</string>
+    <string name="action_top_rated">Highest Rated</string>
+    <string name="action_average_rating">Average Rating</string>
+    <string name="action_unsorted">Unsorted</string>
+    <!-- - - - - - - - - - - -->
+    <!--Used by SharedPreferences-->
+    <!-- - - - - - - - - - - -->
 
     <!-- preferences menu option -->
     <string name="action_preferences">Preferences</string>
 
 
+    <!-- - https://www.youtube.com/watch?v=_yaP4etGKlU Radio Buttons: Android Programming -->
+    <!-- key name for sort preference in SharedPreferences [CHAR LIMIT=NONE] -->
+
+    <!-- value in SharedPreferences for tops rated option [CHAR LIMIT=NONE] -->
+    <string name="pref_top_rated_key" translatable="false">top_rated</string>
+
+    <!-- value in SharedPreferences for average rating option [CHAR LIMIT=NONE] -->
+    <string name="pref_average_rated_key" translatable="false">average_rating</string>
+
+    <!-- value in SharedPreferences for unsorted option [CHAR LIMIT=NONE] -->
+    <string name="pref_unsorted_key" translatable="false">unsorted</string>
+
+    <!-- key name for sort preference in SharedPreferences [CHAR LIMIT=NONE] -->
+    <string name="sort_order_key" translatable="false">sortOrder</string>
+    <!-- value in SharedPreferences for most popular option-->
+    <string name="pref_most_popular_key" translatable="false">popular</string>
+    <!-- value in SharedPreferences for highest rated option [CHAR LIMIT=NONE] -->
+    <string name="pref_highest_rated_key" translatable="false">top_rated</string>
+
+    <string name="settings_order_by">Sort movies by:</string>
 
     <!-- - - - - - - - - - - -->
     <!--Used by SharedPreferences-->
@@ -44,13 +70,9 @@
     <string name="pref_sort_order">Sort Order</string>
     <string name="pref_label_most_popular">Most Popular</string>
     <string name="pref_label_highest_rated">Highest Rated</string>
+    <string name="pref_label_top_rated">Top Rated</string>
+    <string name="pref_unsorted">Unsorted</string>
 
-    <!-- key name for sort preference in SharedPreferences [CHAR LIMIT=NONE] -->
-    <string name="sort_order_key" translatable="false">sortOrder</string>
-    <!-- value in SharedPreferences for most popular option-->
-    <string name="pref_most_popular_key" translatable="false">popular</string>
-    <!-- value in SharedPreferences for highest rated option [CHAR LIMIT=NONE] -->
-    <string name="pref_highest_rated_key" translatable="false">top_rated</string>
 
     <string name= "sort_most_pop">Most Popular Movies</string>
     <string name= "sort_top_rated">Top Rated Movies</string>
@@ -70,6 +92,9 @@
     <string name= "sort_popularity_hint">Sort by popularity</string>
     <string name= "sort_average_rating_hint">Sort by average rating</string>
     <string name= "sort_favorite_hint">Sort by favorite</string>
+
+    <string name= "image_content_description">Image Displayed Here</string>
+
 
 
 

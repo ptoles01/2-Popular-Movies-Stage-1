@@ -18,7 +18,7 @@ interface MainActivityInterface{
     MovieAdapter getMoviePosterAdapter();
     TextView getErrorMessage();
     ProgressBar getProgressBar(); // i.e. getLoadingIndicator();
-    RecyclerView getMoviePosterGrid();
+    RecyclerView getMoviePosterRecyclerView();
     void launchDetailActivity(MoviePoster moviePoster);
 
 
@@ -39,12 +39,10 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.ptoles.popularmovies.model.MoviePoster;
 import com.ptoles.popularmovies.utils.JsonParser;
@@ -68,12 +66,12 @@ public class MainActivity extends AppCompatActivity
     private String sortBy;
 
     private TextView errorMessage;
-    private RecyclerView moviePosterGrid;
+    private RecyclerView moviePosterRecyclerView;
     private MoviePosterAdapter moviePosterAdapter;
-    RecyclerView.LayoutManager moviePosterLayoutManager;
     private List<MoviePoster> moviePostersList;
     private static final int MOVIE_LOADER_ID = 0;
-    private static boolean PREFERENCES_UPDATED = false;
+    private static final String CURRENT_POSITION = "position";
+    private int moviePosition;
 
     private ProgressBar progressBar;
 
@@ -92,7 +90,7 @@ public class MainActivity extends AppCompatActivity
     android.support.v4.app.LoaderManager.LoaderCallbacks<MoviePoster> moviePosterLoaderCallbacks;
 
 
-    public boolean isInternetAvailable() {
+    private boolean isInternetAvailable() {
         return NetworkUtils.getInstance(this).isNetworkAvailable();
     }
 
@@ -118,28 +116,18 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //https://www.youtube.com/watch?v=WBbsvqSu0is - sending parcelable bundle between activities
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 1 - Obtain a reference to my RecyclerView
-        moviePosterGrid = findViewById(R.id.movie_poster_grid);
-        moviePosterGrid.setAdapter(moviePosterAdapter);
-        moviePosterGrid.setHasFixedSize(true);
-
-        errorMessage = findViewById(R.id.error_message_text_view);
-
-        int numberOfColumns = getResources().getInteger(R.integer.num_columns);//2 or 4;
-        moviePosterLayoutManager = new GridLayoutManager(this, numberOfColumns);
-        moviePosterGrid.setLayoutManager(moviePosterLayoutManager);
-
-        progressBar = findViewById(R.id.progressBar);
-
         moviePostersList = new ArrayList<>();
-        moviePosterAdapter = new MoviePosterAdapter(this, moviePostersList, this);
 
-        moviePosterGrid.setAdapter(moviePosterAdapter);
+        // 1 - Obtain a reference to my RecyclerView
+        buildMoviePosterRecyclerView();
+
 
         // Check for network connectivity before attempting to download  poster data
+        progressBar = findViewById(R.id.progressBar);
 
         // If there is a network connection, get the data
         if (isInternetAvailable()) {
@@ -147,19 +135,27 @@ public class MainActivity extends AppCompatActivity
             android.support.v4.app.LoaderManager loaderManager = getSupportLoaderManager();
           //  Toast.makeText(this,"You are online!!!!",Toast.LENGTH_LONG).show();
 
-            loaderManager.initLoader(MOVIE_LOADER_ID, null, this);
+            loaderManager.initLoader(MOVIE_LOADER_ID, null, this); //.forceload();
             errorMessage.setVisibility(View.GONE); // Hide the error message
+
+
         } else {
             // Otherwise, hide the progress bar then display an error message
             // Hide the progress bar before
             progressBar.setVisibility(View.GONE);
 
             // Update empty state with no connection error message
-            moviePosterGrid.setVisibility(View.GONE);//
+            moviePosterRecyclerView.setVisibility(View.GONE);//
             errorMessage.setVisibility(View.VISIBLE);
           //  Toast.makeText(this,"You are not online!!!!",Toast.LENGTH_LONG).show();
 
         }
+
+      /*  if (savedInstanceState != null && savedInstanceState.containsKey(CURRENT_POSITION)) {
+            moviePosition = savedInstanceState.getInt(CURRENT_POSITION);
+        }
+*/
+
 
         // 5 - Setup shared preferences re: sort order
         // Register MainActivity as an OnPreferenceChangedListener to receive a callback when a
@@ -175,84 +171,73 @@ public class MainActivity extends AppCompatActivity
         //checkSharedPreferences(sharedPreferencesEditor);
     }// end - protected void onCreate(Bundle savedInstanceState)
 
-// @ 29:36
-    public String getSortBy() { return sortBy; }
+    public void buildMoviePosterRecyclerView() {
 
-    public MoviePosterAdapter getMoviePosterAdapter() { return moviePosterAdapter;  }
+        moviePosterRecyclerView = findViewById(R.id.movie_poster_grid);
+        moviePosterRecyclerView.setHasFixedSize(true);
 
-    public TextView getErrorMessage() { return errorMessage;  }
+        moviePosterRecyclerView.setAdapter(moviePosterAdapter);
 
-    public RecyclerView getMoviePosterGrid() {  return moviePosterGrid;   }
+        errorMessage = findViewById(R.id.error_message_text_view);
 
-    public ProgressBar getProgressBar() {return progressBar; }
+        int numberOfColumns = getResources().getInteger(R.integer.num_columns);//2 or 4;
+        RecyclerView.LayoutManager moviePosterLayoutManager = new GridLayoutManager(this, numberOfColumns);
+        moviePosterRecyclerView.setLayoutManager(moviePosterLayoutManager);
+        moviePosterRecyclerView.setAdapter(moviePosterAdapter);
 
 
+        moviePosterAdapter = new MoviePosterAdapter(this, moviePostersList);
 
-    private void launchDetailActivity(Integer position) {
-        Intent intent = new Intent(this, DetailActivity.class);
-        intent.putExtra(DetailActivity.EXTRA_POSITION, position);
+    }
+
+    private void startPreferencesActivity(MoviePoster moviePoster) {
+        Intent intent = new Intent(this, SettingsActivity.class);
+
         startActivity(intent);
-    }// end - private void launchDetailActivity(int position)
-
-    private void startDetailActivity(MoviePoster moviePoster) {
-        Intent intent = new Intent(this, DetailActivity.class);
-        intent.putExtra("moviePoster", moviePoster);
-        startActivity(intent);
-    }// end - private void startDetailActivity(int position)
+    }// end - private void startPreferencesActivity(int position)
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu mainMenu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.main_menu, mainMenu);
+        /*MenuInflater inflater = */ getMenuInflater();
+        getMenuInflater().inflate(R.menu.main_menu, mainMenu);
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // https://stackoverflow.com/questions/20873777/how-to-open-an-activity-after-clicking-on-a-menu-item
+        Intent intent;
         int id = item.getItemId();
+        switch (id){
+            case R.id.action_settings:
+                intent = SettingsActivity.makeIntent(MainActivity.this);
 
-        if (id == R.id.action_preferences) {
-            Intent startPreferencesActivity = new Intent(this, PreferencesActivity.class);
-            startActivity(startPreferencesActivity);
-            return true;
-        }
-//@ 30:28
-        if (id == R.id.action_most_popular) {
-            Intent startDetailActivity = new Intent(this, DetailActivity.class);
-            sortBy = mostPopularUrl;
-            //startActivity(startDetailActivity); @31:02 // he called FetchMovies();
-            return true;
+                startActivity(intent);
+                return true;
+                //break;
 
-        }
 
-        if (id == R.id.action_highest_rated) {
-            Intent startDetailActivity = new Intent(this, DetailActivity.class);
-            sortBy = topRatedUrl;
-           // startActivity(startDetailActivity); @31:02 s // he called FetchMovies();
-            return true;
-
+            default:
+                return super.onOptionsItemSelected(item);
 
         }
 
 
-
-            return super.onOptionsItemSelected(item);
     } // end - public boolean onOptionsItemSelected(MenuItem item)
+
 
     @Override
     public android.support.v4.content.Loader<List<MoviePoster>> onCreateLoader(int id, Bundle bundle) {
 
         String preferredSortOrder = MovieSortPreferences.getPreferredSortOrder(this);
 
+
         if (preferredSortOrder.equals(getString(R.string.pref_most_popular_key))) {
             Log.d(TAG, "LoadInBackground: use URL for most popular");
-            MoviePosterLoader moviePosterLoader = new MoviePosterLoader(this, JsonParser.mostPopularUrl);
-            return moviePosterLoader;
+            return new MoviePosterLoader(this, JsonParser.mostPopularUrl);
         } else {
             Log.d(TAG, "LoadInBackground: use URL for highest rated");
-            MoviePosterLoader moviePosterLoader = new MoviePosterLoader(this, JsonParser.topRatedUrl);
-            return moviePosterLoader;
+            return new MoviePosterLoader(this, JsonParser.topRatedUrl);
         }
     }
     @Override
@@ -266,10 +251,10 @@ public class MainActivity extends AppCompatActivity
                 moviePostersList.addAll(moviePosters);
             } else {
                 errorMessage.setVisibility(View.VISIBLE);
+                // Set empty state text to display "No movies available!"
+                errorMessage.setText(R.string.no_movies_available);
             }
 
-            // Set empty state text to display "No movies available!"
-            errorMessage.setText(R.string.no_movies_available);
             moviePosterAdapter.notifyDataSetChanged();
         }
 
@@ -287,6 +272,14 @@ public class MainActivity extends AppCompatActivity
         PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this);
     }
 
+    //Store the position(mPosition) in the bundle
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if (moviePosition != RecyclerView.NO_POSITION) {
+            outState.putInt(CURRENT_POSITION, moviePosition);
+        }
+        super.onSaveInstanceState(outState);
+    }
     @Override
     public void onListItemClick(int clickedPosition) {
         // Handled by MoviePosterAdapter.
@@ -294,7 +287,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        PREFERENCES_UPDATED = true;
+        boolean PREFERENCES_UPDATED = true;
         if (PREFERENCES_UPDATED) {
             Log.d(TAG, "onSharedPreferenceChanged: preferences were changed");
             moviePostersList.clear();

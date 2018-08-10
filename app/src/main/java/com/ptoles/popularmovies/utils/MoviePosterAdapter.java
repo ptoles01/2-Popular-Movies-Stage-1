@@ -2,11 +2,14 @@ package com.ptoles.popularmovies.utils;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Movie;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v7.widget.RecyclerView;
+import android.widget.AdapterView;
+import android.widget.GridView;
 import android.widget.ImageView;
 
 import com.google.gson.Gson;
@@ -16,6 +19,7 @@ import com.ptoles.popularmovies.model.MoviePoster;
 import com.squareup.picasso.Picasso;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 // Creating a custom adapter requires the following:
@@ -28,10 +32,9 @@ import java.util.List;
 public class MoviePosterAdapter extends
         RecyclerView.Adapter<MoviePosterAdapter.ViewHolder> implements Serializable{
 
-    private Context mpContext;
+    private final Context mpContext;
     private List<MoviePoster> mpMoviePosterList;
-    private MoviePoster moviePoster;
-    final private ListItemClickListener mpOnClickListener;
+    private ListItemClickListener mpOnClickListener;
 
     public interface ListItemClickListener {
         void onListItemClick(int clickedPosition);
@@ -44,7 +47,11 @@ public class MoviePosterAdapter extends
         mpOnClickListener = listener;
 
     }
+    public MoviePosterAdapter(Context context, List<MoviePoster> moviePosters) {
+        mpContext = context;
+        mpMoviePosterList = moviePosters;
 
+    }
 
     //@32:30 - https://www.youtube.com/watch?v=yP8KKpKEXYc
 // https://antonioleiva.com/recyclerview/
@@ -86,40 +93,27 @@ public class MoviePosterAdapter extends
         // the data item is just an image stored as a string in this case
         private ImageView mpImageView;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {// listener for the view itself
             super(itemView);
             mpImageView = itemView.findViewById(R.id.poster_image_view);
-            itemView.setOnClickListener(this);
+            mpImageView.setOnClickListener(this);
         }
 
 
-
-
-
         @Override
-        public void onClick(View view) {
+        public void onClick(View view) {// listener for the item contained in the view
 
             int clickedPosition = getAdapterPosition();
             mpOnClickListener.onListItemClick(clickedPosition);
-
-            MoviePoster currentMoviePoster = mpMoviePosterList.get(clickedPosition);
-            Gson gson = new Gson();
-
             Intent intent = new Intent(mpContext, DetailActivity.class);
-            intent.putExtra("key", gson.toJson(currentMoviePoster)); //Optional parameters
-
+            intent.putExtra("Movie Poster",mpMoviePosterList.get(clickedPosition));
+                    //see DetailActivity for dereference
+                    //https://www.youtube.com/watch?v=WBbsvqSu0is - Send Custom Object Using Parcelable
             mpContext.startActivity(intent);
         }
     }
 
 
-
-
-
-    public void setMovieData(List<MoviePoster> moviePosters) {
-        mpMoviePosterList = moviePosters;
-        notifyDataSetChanged();
-    }
 
     // 3 - required by the BaseAdapter class but not used in this application
     //     Returns the data item for a given position.
@@ -130,17 +124,15 @@ public class MoviePosterAdapter extends
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
-        //LayoutInflater movieInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        LayoutInflater movieInflater = (LayoutInflater) mpContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        //View movieGridView;
-        //ImageView movieImageView;
-
-        moviePoster = mpMoviePosterList.get(position);
+        MoviePoster moviePoster = mpMoviePosterList.get(position);
         // Get item from your data
         // Replace the contents of the view with that item
         if (holder.mpImageView == null) {
             //get the layout from the xml file
-            // movieGridView = movieInflater.inflate(R.layout.activity_blank_poster_thumbnail,null);
+            View  movieGridView = movieInflater.inflate(R.layout.activity_blank_poster_thumbnail,null);
+
             holder.mpImageView  = new ImageView(mpContext);
             holder.mpImageView.setAdjustViewBounds(true);
         }
@@ -148,9 +140,11 @@ public class MoviePosterAdapter extends
 //with(mpContext)
         Picasso.get()
                 .load(moviePoster.getPosterPath())
-                .noFade().resize(300,350)
-                .error(R.drawable.bug)//when we get an error
-                .placeholder(R.drawable.loading)// as the image loads
+                .noFade()
+                //.resize(300,350)
+                //.error(R.drawable.bug)//when we get an error
+                .error(R.drawable.movie_poster_template_dark_no_image)//when we get an error
+                .placeholder(R.drawable.loading_1)// as the image loads
                 .into(holder.mpImageView);
 
     }
@@ -177,6 +171,8 @@ public class MoviePosterAdapter extends
     //      noFade – by default, the image fades in if loaded from the disc cache or from the network. We’ve disabled the fade-in
     //      centerCrop – crops the image so it fits inside our dimensions
     //      into – asynchronously loads the image into this image view
+
+
 
 
 }

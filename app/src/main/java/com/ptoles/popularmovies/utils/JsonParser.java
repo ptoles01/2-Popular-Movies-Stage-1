@@ -1,21 +1,16 @@
 package com.ptoles.popularmovies.utils;
 
-import android.content.Context;
-import android.support.v4.content.AsyncTaskLoader;
+//import android.support.v7.recyclerview.BuildConfig;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.GridView;
-import android.widget.ProgressBar;
 
 import com.ptoles.popularmovies.BuildConfig;
 import com.ptoles.popularmovies.model.MoviePoster;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 // https://medium.com/@sanjeevy133/an-idiots-guide-to-android-asynctaskloader-76f8bfb0a0c0
@@ -45,11 +40,14 @@ import java.util.List;
 // https://stackoverflow.com/questions/50595704/glteximage2d-got-err-pre-0x506-internal-0x1908-format-0x1908-type-0x1401/50605097
 public class JsonParser {
     private static final String TAG = JsonParser.class.getSimpleName();
-
-
-    public static final String BASE_URL = "http://api.themoviedb.org/3/discover/movie?";
-    public static final String COMPLETE_URL = BASE_URL;
     public static final String apiKey = BuildConfig.ApiKey;
+
+
+    private static final String BASE_URL = "http://api.themoviedb.org/3/discover/movie?";
+    public static final String COMPLETE_URL = BASE_URL;
+
+    /*1*/  static String ImageURL = "https://api.themoviedb.org/3/movie/550?";
+
 
     /* 2 */ final String SORT_BY_POPULARITY = "sort_by=popularity.desc&";
     /* 3 */ final String SORT_BY_AVERAGE_RATING = "sort_by=vote_average.desc&";
@@ -119,9 +117,10 @@ public class JsonParser {
 
 
                 String backdropPath = jsonMoviePoster.optString("backdrop_path");
+                backdropPath = BACKDROP_URL + backdropPath;
 
                 String posterPath = jsonMoviePoster.optString("poster_path");
-                // URL_COMPLETE = JsonConnector.ImageURL + posterPath;
+                posterPath = POSTER_URL+ posterPath;
 
                 String originalTitle = jsonMoviePoster.optString("original_title");
                 Double voteAverage = jsonMoviePoster.optDouble("vote_average");

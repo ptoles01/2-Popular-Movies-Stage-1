@@ -67,7 +67,7 @@ public class MoviePoster implements Parcelable{
     // Getters and Setters
 
 
-    protected MoviePoster(Parcel source) {
+    private MoviePoster(Parcel source) {
         if (source.readByte() == 0) {
             voteCount = null;
         } else {
@@ -85,7 +85,7 @@ public class MoviePoster implements Parcelable{
         originalTitle = source.readString();
 
         if (source.readByte() == 0) {
-            genreIDs = new ArrayList<Integer>();
+            genreIDs = new ArrayList<>();
             source.readList(genreIDs, Integer.class.getClassLoader());
         } else {
             genreIDs = null;

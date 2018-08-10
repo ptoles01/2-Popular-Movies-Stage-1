@@ -2,18 +2,11 @@ package com.ptoles.popularmovies.utils;
 
 import android.content.AsyncTaskLoader;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.ptoles.popularmovies.MainActivity;
 import com.ptoles.popularmovies.model.MoviePoster;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,7 +15,6 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.lang.Integer.valueOf;
 import static java.net.HttpURLConnection.HTTP_OK;
 // https://medium.com/@sanjeevy133/an-idiots-guide-to-android-asynctaskloader-76f8bfb0a0c0
 // https://google-developer-training.gitbooks.io/android-developer-fundamentals-course-concepts/
@@ -31,38 +23,29 @@ import static java.net.HttpURLConnection.HTTP_OK;
 //        device configuration changes. For these situations, use loaders, which are a set of classes
 //         that facilitate loading data into an activity.
 
-public class JsonDownloader extends AsyncTaskLoader<List<MoviePoster>> {
+class JsonDownloader extends AsyncTaskLoader<List<MoviePoster>> {
 
     private static final String TAG = JsonDownloader.class.getSimpleName();
 
 
-
-// JSON can generally express the same data using fewer characters than XML,
-// thus saving the phone from having to transfer more data every time
-// there is a query to a website. This makes JSON a natural choice
-// for quick and efficient website querying (for websites which offer it).
-//             URL url = new URL("http://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=75fa203cc819faba4f627132ce414b9c")
-    /* 1 */
-    ProgressBar progressBar;
-    String jsonURL;
+    private String jsonURL;
     String jsonURLIsNull = "";// it is required that this remains an empty string
                               // because the first test in the JsonParser code is
                               // for an empty string
-    static List<MoviePoster> moviePosters =  new ArrayList<MoviePoster>();
+    private static List<MoviePoster> moviePosters = new ArrayList<>();
 
-    public JsonDownloader(Context context) {
+    private JsonDownloader(Context context) {
         super(context);
     }
 
-    public JsonDownloader(Context context, String jsonData ) {
+    private JsonDownloader(Context context, String jsonData) {
         super(context);
-        progressBar = new ProgressBar(context);
+        ProgressBar progressBar = new ProgressBar(context);
         jsonURL = jsonData;
 
         if (jsonData.startsWith("Error")){
 
-            String error = jsonData;
-            Toast.makeText(context, error, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, jsonData, Toast.LENGTH_SHORT).show();
         }else{
             // parseData
            moviePosters = JsonDownloader.DownloadMovieData(jsonURL);
@@ -95,7 +78,7 @@ public class JsonDownloader extends AsyncTaskLoader<List<MoviePoster>> {
        // http://www.baeldung.com/java-http-request
 
         HttpURLConnection connection=null;
-       BufferedReader input = null;
+       BufferedReader input;
        InputStreamReader inputStream = null;
 
        try {
@@ -112,13 +95,13 @@ public class JsonDownloader extends AsyncTaskLoader<List<MoviePoster>> {
                 inputStream = new InputStreamReader(connection.getInputStream());
                 input = new BufferedReader(inputStream);
 
-                String inputLine = null;
-                StringBuffer output = new StringBuffer();
+                String inputLine;
+                StringBuilder output = new StringBuilder();
 
 
 
                 while ((inputLine = input.readLine()) != null) {
-                    output.append(inputLine+ "\n");
+                    output.append(inputLine).append("\n");
                 }
                 input.close(); // Close the buffered reader
                 inputStream.close(); // close the connection

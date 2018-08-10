@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <fragment xmlns:android="http://schemas.android.com/apk/res/android"
-    android:name="com.ptoles.popularmovies.PreferencesFragment"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:name="com.ptoles.popularmovies.SettingsActivity$moviePreferenceFragments"
     android:id="@+id/movieposter_settings_fragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" />
+    android:layout_height="match_parent"
+    tools:context="com.ptoles.popularmovies.SettingsActivity">
+
+
+    <RadioGroup
+        android:id="@+id/radio_group_sort_options"
+
+        />
+</fragment>

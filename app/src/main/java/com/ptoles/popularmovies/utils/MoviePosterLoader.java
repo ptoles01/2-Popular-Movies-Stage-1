@@ -3,7 +3,6 @@ package com.ptoles.popularmovies.utils;
 import android.content.Context;
 import android.support.v4.content.AsyncTaskLoader;
 
-import com.ptoles.popularmovies.R;
 import com.ptoles.popularmovies.model.MoviePoster;
 
 import java.util.List;
@@ -13,8 +12,7 @@ public class MoviePosterLoader extends AsyncTaskLoader<List<MoviePoster>> {
     private static final String TAG = MoviePosterLoader.class.getName();
 
     // Query URL
-    private String jsonURL;
-    private List<MoviePoster> moviePosterList;
+    private final String jsonURL;
 
 
     public MoviePosterLoader(Context context, String jsonData) {
@@ -36,8 +34,7 @@ public class MoviePosterLoader extends AsyncTaskLoader<List<MoviePoster>> {
 
         //returns moviesPosters  or List<MoviePoster>
 
-        moviePosterList = JsonDownloader.DownloadMovieData(jsonURL);
-        return moviePosterList;
+        return JsonDownloader.DownloadMovieData(jsonURL);
 
 
     }
