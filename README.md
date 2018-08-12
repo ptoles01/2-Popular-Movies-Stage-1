@@ -1,2 +1,1 @@
-"# 2-Popular-Movies-Stage-1" 
-"# Popular-Movies-Stage-1A" 
+"# 2-Popular-Movies-Stage-1" cannot display from intiLoader to MainAcitvity 
