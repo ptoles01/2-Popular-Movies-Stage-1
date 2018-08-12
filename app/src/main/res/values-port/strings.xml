@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_window_title">Movie Poster Settings</string>
+    <string name="settings_order_by_key">order_by</string>
+    <string name="settings_order_by_default">settings_order_most_popular</string>
+</resources>

@@ -58,22 +58,25 @@ import static com.ptoles.popularmovies.utils.JsonParser.*;
 
 public class MainActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<List<MoviePoster>>,
-        MoviePosterAdapter.ListItemClickListener,
+        //MoviePosterAdapter.ListItemClickListener,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private String sortBy;
-
-    private TextView errorMessage;
-    private RecyclerView moviePosterRecyclerView;
-    private MoviePosterAdapter moviePosterAdapter;
-    private List<MoviePoster> moviePostersList;
     private static final int MOVIE_LOADER_ID = 0;
     private static final String CURRENT_POSITION = "position";
+
+    private TextView errorMessage;
+
+    private MoviePosterAdapter moviePosterAdapter;
+    private String orderBy;
+    private RecyclerView moviePosterRecyclerView;
+
     private int moviePosition;
 
     private ProgressBar progressBar;
+
+    SharedPreferences sharedPreferences;
 
 
 
@@ -87,7 +90,6 @@ public class MainActivity extends AppCompatActivity
            // "https://api.themoviedb.org/3/movie/top_rated?&api_key="+apiKey;
 
 
-    android.support.v4.app.LoaderManager.LoaderCallbacks<MoviePoster> moviePosterLoaderCallbacks;
 
 
     private boolean isInternetAvailable() {
@@ -120,10 +122,28 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        moviePostersList = new ArrayList<>();
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        orderBy = sharedPreferences.getString(
+                getString(R.string.settings_order_by_key),
+                getString(R.string.settings_order_by_default));
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
 
         // 1 - Obtain a reference to my RecyclerView
-        buildMoviePosterRecyclerView();
+        moviePosterRecyclerView.setHasFixedSize(true);
+
+        ArrayList<MoviePoster> moviePosters = new ArrayList<>();
+        moviePosterRecyclerView = findViewById(R.id.movie_poster_grid);
+        moviePosterAdapter = new MoviePosterAdapter(this, moviePosters);
+        moviePosterRecyclerView.setAdapter(moviePosterAdapter);
+
+
+        errorMessage = findViewById(R.id.error_message_text_view);
+
+        int numberOfColumns = getResources().getInteger(R.integer.num_columns);//2 or 4;
+        RecyclerView.LayoutManager moviePosterLayoutManager = new GridLayoutManager(this, numberOfColumns);
+        moviePosterRecyclerView.setLayoutManager(moviePosterLayoutManager);
+
 
 
         // Check for network connectivity before attempting to download  poster data
@@ -132,12 +152,15 @@ public class MainActivity extends AppCompatActivity
         // If there is a network connection, get the data
         if (isInternetAvailable()) {
             // Get a reference to the LoaderManager, in order to interact with loaders.
-            android.support.v4.app.LoaderManager loaderManager = getSupportLoaderManager();
+            LoaderManager loaderManager = getSupportLoaderManager();
           //  Toast.makeText(this,"You are online!!!!",Toast.LENGTH_LONG).show();
 
-            loaderManager.initLoader(MOVIE_LOADER_ID, null, this); //.forceload();
-            errorMessage.setVisibility(View.GONE); // Hide the error message
+            //https://stackoverflow.com/questions/41267446/how-to-get-loadermanager-initloader-working-within-a-fragment
+            //implementation 'com.android.support.v4.app.LoaderManager.LoaderCallbacks'
+            //    implementation 'com.android.support.v4.app.LoaderManager.LoaderCallbacks'
+            loaderManager.initLoader(MOVIE_LOADER_ID, null, this);//.forceload();
 
+            errorMessage.setVisibility(View.GONE); // Hide the error message
 
         } else {
             // Otherwise, hide the progress bar then display an error message
@@ -151,10 +174,10 @@ public class MainActivity extends AppCompatActivity
 
         }
 
-      /*  if (savedInstanceState != null && savedInstanceState.containsKey(CURRENT_POSITION)) {
+        if (savedInstanceState != null && savedInstanceState.containsKey(CURRENT_POSITION)) {
             moviePosition = savedInstanceState.getInt(CURRENT_POSITION);
         }
-*/
+
 
 
         // 5 - Setup shared preferences re: sort order
@@ -170,25 +193,8 @@ public class MainActivity extends AppCompatActivity
 
         //checkSharedPreferences(sharedPreferencesEditor);
     }// end - protected void onCreate(Bundle savedInstanceState)
+    //https://www.learnhowtoprogram.com/android/web-service-backends-and-custom-fragments/custom-adapters-with-recyclerview
 
-    public void buildMoviePosterRecyclerView() {
-
-        moviePosterRecyclerView = findViewById(R.id.movie_poster_grid);
-        moviePosterRecyclerView.setHasFixedSize(true);
-
-        moviePosterRecyclerView.setAdapter(moviePosterAdapter);
-
-        errorMessage = findViewById(R.id.error_message_text_view);
-
-        int numberOfColumns = getResources().getInteger(R.integer.num_columns);//2 or 4;
-        RecyclerView.LayoutManager moviePosterLayoutManager = new GridLayoutManager(this, numberOfColumns);
-        moviePosterRecyclerView.setLayoutManager(moviePosterLayoutManager);
-        moviePosterRecyclerView.setAdapter(moviePosterAdapter);
-
-
-        moviePosterAdapter = new MoviePosterAdapter(this, moviePostersList);
-
-    }
 
     private void startPreferencesActivity(MoviePoster moviePoster) {
         Intent intent = new Intent(this, SettingsActivity.class);
@@ -248,7 +254,7 @@ public class MainActivity extends AppCompatActivity
             progressBar.setVisibility(View.GONE);
 
             if (moviePosters != null && !moviePosters.isEmpty()) {
-                moviePostersList.addAll(moviePosters);
+                moviePosters.addAll(moviePosters);
             } else {
                 errorMessage.setVisibility(View.VISIBLE);
                 // Set empty state text to display "No movies available!"
@@ -261,7 +267,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onLoaderReset(Loader<List<MoviePoster>> loader) {
-        moviePostersList.clear();
+
     }
 
 
@@ -280,17 +286,14 @@ public class MainActivity extends AppCompatActivity
         }
         super.onSaveInstanceState(outState);
     }
-    @Override
-    public void onListItemClick(int clickedPosition) {
-        // Handled by MoviePosterAdapter.
-    }
+
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         boolean PREFERENCES_UPDATED = true;
         if (PREFERENCES_UPDATED) {
             Log.d(TAG, "onSharedPreferenceChanged: preferences were changed");
-            moviePostersList.clear();
+
             getSupportLoaderManager().restartLoader(MOVIE_LOADER_ID, null, this);
             PREFERENCES_UPDATED = false;
         }
@@ -307,3 +310,23 @@ public class MainActivity extends AppCompatActivity
         Log.v("Home", "############################You are not online!!!!");
     }*/
 } // end of the class MainActivity.java
+/*
+
+    public RecyclerView buildMoviePosterRecyclerView(RecyclerView view) {
+         view.setHasFixedSize(true);
+
+        ArrayList<MoviePoster> moviePosters = new ArrayList<>();
+        moviePosterAdapter = new MoviePosterAdapter(this, moviePosters);
+        view.setAdapter(moviePosterAdapter);
+
+
+        errorMessage = findViewById(R.id.error_message_text_view);
+
+        int numberOfColumns = getResources().getInteger(R.integer.num_columns);//2 or 4;
+        RecyclerView.LayoutManager moviePosterLayoutManager = new GridLayoutManager(this, numberOfColumns);
+        view.setLayoutManager(moviePosterLayoutManager);
+
+
+        return view;
+    }
+ */

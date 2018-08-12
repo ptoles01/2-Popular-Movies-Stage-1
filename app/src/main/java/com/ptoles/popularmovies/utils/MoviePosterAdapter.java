@@ -1,5 +1,6 @@
 package com.ptoles.popularmovies.utils;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Movie;
@@ -9,8 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v7.widget.RecyclerView;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 
@@ -29,30 +32,115 @@ import java.util.List;
 //      4-
 
 
-public class MoviePosterAdapter extends
-        RecyclerView.Adapter<MoviePosterAdapter.ViewHolder> implements Serializable{
+//RecyclerView.Adapter<MoviePosterAdapter.ViewHolder> implements Serializable{
 
-    private final Context mpContext;
-    private List<MoviePoster> mpMoviePosterList;
-    private ListItemClickListener mpOnClickListener;
+// 1 - Constructor
 
-    public interface ListItemClickListener {
-        void onListItemClick(int clickedPosition);
-    }
 
-    // 1 - Constructor
-    public MoviePosterAdapter(Context context, List<MoviePoster> moviePosters, ListItemClickListener listener) {
-        mpContext = context;
-        mpMoviePosterList = moviePosters;
-        mpOnClickListener = listener;
 
-    }
-    public MoviePosterAdapter(Context context, List<MoviePoster> moviePosters) {
-        mpContext = context;
-        mpMoviePosterList = moviePosters;
+public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.MoviePosterViewHolder>{
+//https://stackoverflow.com/questions/40683817/how-to-set-two-adapters-to-one-recyclerview
+    private static final int ITEM_TYPE_MOVIE_POSTER = 0;
+    private static final int ITEM_TYPE_UNKNOWN = -1;
 
-    }
+    private ArrayList<MoviePoster> moviePosters = new ArrayList<>();
+    private Context moviePosterContext;
 
+
+
+     public MoviePosterAdapter(Context context, ArrayList<MoviePoster> moviePosters) {
+
+         this.moviePosterContext = context;
+         this.moviePosters = moviePosters;
+     }
+
+
+
+     @NonNull
+     @Override
+     public MoviePosterViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+         View view =  layoutInflater.inflate(R.layout.grid_item, parent, false);
+
+        // MoviePosterViewHolder viewHolder =
+         return new MoviePosterViewHolder(view);
+     }
+     @Override
+     public void onBindViewHolder(@NonNull MoviePosterViewHolder holder, int position) {
+
+     }
+
+     @Override
+     public int getItemCount() {
+         return 0;
+     }
+
+
+     public class MoviePosterViewHolder extends RecyclerView.ViewHolder {
+         private Context moviePosterContext;
+
+         View view = itemView;
+         TextView titleView = view.findViewById(R.id.original_title_tv);//(TextView)
+         TextView releaseDateView = view.findViewById(R.id.release_date_tv);//(TextView)
+         TextView ratingView = view.findViewById(R.id.vote_average_tv);//(TextView)
+         TextView synopsisView = view.findViewById(R.id.overview_tv); //(TextView)
+
+
+         public MoviePosterViewHolder(View itemView) {
+             super(itemView);
+             moviePosterContext = itemView.getContext();
+         }
+
+
+        public int getItemViewType(int position) {
+
+            if (moviePosters.get(position) instanceof MoviePoster) {
+                return ITEM_TYPE_MOVIE_POSTER;
+            } else {
+                return ITEM_TYPE_UNKNOWN;
+            }
+
+        }
+
+
+
+        @NonNull
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+            // Check if the existing view is being reused, otherwise inflate the view
+            View listItemView = convertView;
+            if (listItemView == null) {
+                listItemView = LayoutInflater.from(moviePosterContext).inflate(
+                        R.layout.grid_item, parent, false);
+            }
+            // Get the {@link MoviePoster} object located at this position in the list
+            MoviePoster currentMoviePoster = moviePosters.get(position);
+            ImageView ivPoster = listItemView.findViewById(R.id.poster_image_view);
+
+
+            if (ivPoster == null) {
+                //get the layout from the xml file
+                listItemView = LayoutInflater
+                        .from(moviePosterContext)
+                        .inflate(R.layout.activity_blank_poster_thumbnail, null);
+
+                ivPoster = new ImageView(moviePosterContext);
+                ivPoster.setAdjustViewBounds(true);
+            }
+
+            if (currentMoviePoster != null) {
+                Picasso.get()
+                        .load(currentMoviePoster.getPosterPath())
+                        .noFade()
+                        //.resize(300,350)
+                        //.error(R.drawable.bug)//when we get an error
+                        .error(R.drawable.movie_poster_template_dark_no_image)//when we get an error
+                        .placeholder(R.drawable.loading_1)// as the image loads
+                        .into(ivPoster);
+            }
+            return listItemView;
+        }// getView
+     }// inner class MoviePosterViewHolder
+ }// class MoviePosterAdapter
     //@32:30 - https://www.youtube.com/watch?v=yP8KKpKEXYc
 // https://antonioleiva.com/recyclerview/
 
@@ -64,90 +152,6 @@ public class MoviePosterAdapter extends
 
     // https://www.youtube.com/watch?v=wfoqsl5REpo
 
-
-
-    @NonNull
-    @Override
-    public MoviePosterAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent,
-                                                            int viewType) {
-        // create a new view
-        View view = LayoutInflater.from(mpContext).inflate(R.layout.grid_item, parent, false);
-        return new ViewHolder(view);
-    }
-
-    // 2 - The number of movie posters in the list
-    //     Count of data items represented by adapter.
-    @Override
-    public int getItemCount() {
-        if (mpMoviePosterList == null || mpMoviePosterList.size() == 0){
-            return -1;
-        }
-        return mpMoviePosterList.size();
-    }
-
-    // Provide a reference to the views for each data item
-    // Complex data items may need more than one view per item, and
-    // you provide access to all the views for a data item in a view holder
-    //
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        // the data item is just an image stored as a string in this case
-        private ImageView mpImageView;
-
-        ViewHolder(View itemView) {// listener for the view itself
-            super(itemView);
-            mpImageView = itemView.findViewById(R.id.poster_image_view);
-            mpImageView.setOnClickListener(this);
-        }
-
-
-        @Override
-        public void onClick(View view) {// listener for the item contained in the view
-
-            int clickedPosition = getAdapterPosition();
-            mpOnClickListener.onListItemClick(clickedPosition);
-            Intent intent = new Intent(mpContext, DetailActivity.class);
-            intent.putExtra("Movie Poster",mpMoviePosterList.get(clickedPosition));
-                    //see DetailActivity for dereference
-                    //https://www.youtube.com/watch?v=WBbsvqSu0is - Send Custom Object Using Parcelable
-            mpContext.startActivity(intent);
-        }
-    }
-
-
-
-    // 3 - required by the BaseAdapter class but not used in this application
-    //     Returns the data item for a given position.
-//https://www.google.com/search?client=opera&q=what+does+onbindviewholder+do&sourceid=opera&ie=UTF-8&oe=UTF-8
- //   @Override
- //   public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
- //   }
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-
-        LayoutInflater movieInflater = (LayoutInflater) mpContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
-        MoviePoster moviePoster = mpMoviePosterList.get(position);
-        // Get item from your data
-        // Replace the contents of the view with that item
-        if (holder.mpImageView == null) {
-            //get the layout from the xml file
-            View  movieGridView = movieInflater.inflate(R.layout.activity_blank_poster_thumbnail,null);
-
-            holder.mpImageView  = new ImageView(mpContext);
-            holder.mpImageView.setAdjustViewBounds(true);
-        }
-
-//with(mpContext)
-        Picasso.get()
-                .load(moviePoster.getPosterPath())
-                .noFade()
-                //.resize(300,350)
-                //.error(R.drawable.bug)//when we get an error
-                .error(R.drawable.movie_poster_template_dark_no_image)//when we get an error
-                .placeholder(R.drawable.loading_1)// as the image loads
-                .into(holder.mpImageView);
-
-    }
 
     // 5 - create a new moviePosterView for each item listed in the MoviePosterAdapter
     // The second parameter of the getView() method is what enables us to reuse
@@ -175,5 +179,5 @@ public class MoviePosterAdapter extends
 
 
 
-}
+
 

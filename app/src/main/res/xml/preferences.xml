@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
 
-    android:title="@string/pref_sort_order">
+    android:title="@string/settings_window_title">
 
     <ListPreference
         android:defaultValue="@string/pref_most_popular_key"

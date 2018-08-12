@@ -94,8 +94,9 @@
     <string name= "sort_favorite_hint">Sort by favorite</string>
 
     <string name= "image_content_description">Image Displayed Here</string>
-
-
+    <string name="settings_window_title">Movie Poster Settings</string>
+    <string name="settings_order_by_key">order_by</string>
+    <string name="settings_order_by_default">settings_order_most_popular</string>
 
 
     <dimen name="grid_column_width">100dp</dimen>
