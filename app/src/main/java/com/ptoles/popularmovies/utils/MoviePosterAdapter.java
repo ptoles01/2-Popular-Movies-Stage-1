@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Movie;
+import android.media.Image;
 import android.nfc.Tag;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -45,8 +46,11 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
     private static final int ITEM_TYPE_MOVIE_POSTER = 0;
     private static final int ITEM_TYPE_UNKNOWN = -1;
 
-    private ArrayList<MoviePoster> moviePosters = new ArrayList<>();
+
+
+    private static ArrayList<MoviePoster> moviePosters = new ArrayList<>();
     private Context moviePosterContext;
+
 
     private static final String TAG = MoviePosterAdapter.class.getSimpleName();
 
@@ -54,10 +58,12 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
      public MoviePosterAdapter(Context context, ArrayList<MoviePoster> moviePosters) {
 
          this.moviePosterContext = context;
-         this.moviePosters = moviePosters;
+         MoviePosterAdapter.moviePosters = moviePosters;
      }
 
-
+    public static void updateMovies(List<MoviePoster> newMoviePosters) {
+         moviePosters = (ArrayList<MoviePoster>) newMoviePosters;
+    }
 
      @NonNull
      @Override
@@ -73,8 +79,7 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
     public void onBindViewHolder(@NonNull MoviePosterViewHolder holder, int position) {
 
         MoviePoster currentMoviePoster = moviePosters.get(position);
-        ImageView ivPoster= (ImageView) holder.view;
-
+        ImageView moviePosterImageView= holder.imageView;
 
         if (currentMoviePoster != null) {
             Picasso.get()
@@ -84,7 +89,7 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
                     //.error(R.drawable.bug)//when we get an error
                     .error(R.drawable.bug)//when we get an error
                     .placeholder(R.drawable.loading_1)// as the image loads
-                    .into(ivPoster);
+                    .into(moviePosterImageView);
         }else {
 
             Picasso.get()
@@ -94,11 +99,7 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
                     //.error(R.drawable.bug)//when we get an error
                     .error(R.drawable.bug)//when we get an error
                     .placeholder(R.drawable.loading_1)// as the image loads
-                    .into(ivPoster);
-
-
-
-
+                    .into(moviePosterImageView);
 
         }
     }
@@ -117,13 +118,16 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
          TextView releaseDateView = view.findViewById(R.id.release_date_tv);//(TextView)
          TextView ratingView = view.findViewById(R.id.vote_average_tv);//(TextView)
          TextView synopsisView = view.findViewById(R.id.overview_tv); //(TextView)
-
+         ImageView imageView = view.findViewById(R.id.poster_image_view);
 
          public MoviePosterViewHolder(View itemView) {
              super(itemView);
              moviePosterContext = itemView.getContext();
          }
 
+         public ImageView getImageView() {
+             return imageView;
+         }
 
         public int getItemViewType(int position) {
 

@@ -42,6 +42,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -56,6 +57,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.ptoles.popularmovies.utils.JsonParser.*;
+import static com.ptoles.popularmovies.utils.MoviePosterAdapter.*;
 
 public class MainActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<List<MoviePoster>>,
@@ -72,6 +74,8 @@ public class MainActivity extends AppCompatActivity
     private MoviePosterAdapter moviePosterAdapter;
     private String orderBy;
     private RecyclerView moviePosterRecyclerView;
+
+    private ImageView moviePosterImageView;
 
     private int moviePosition;
 
@@ -91,7 +95,9 @@ public class MainActivity extends AppCompatActivity
            // "https://api.themoviedb.org/3/movie/top_rated?&api_key="+apiKey;
 
 
-
+    public ImageView getMoviePosterImageView() {
+        return moviePosterImageView;
+    }
 
     private boolean isInternetAvailable() {
         return NetworkUtils.getInstance(this).isNetworkAvailable();
@@ -139,7 +145,7 @@ public class MainActivity extends AppCompatActivity
         this.moviePosterAdapter = new MoviePosterAdapter(this, moviePosters);
         this.moviePosterRecyclerView.setAdapter(moviePosterAdapter);
 
-
+        this.moviePosterImageView  = findViewById(R.id.poster_image_view);
         this.errorMessage = findViewById(R.id.error_message_text_view);
 
         int numberOfColumns = getResources().getInteger(R.integer.num_columns);//2 or 4;
@@ -161,7 +167,7 @@ public class MainActivity extends AppCompatActivity
             //implementation 'com.android.support.v4.app.LoaderManager.LoaderCallbacks'
             //    implementation 'com.android.support.v4.app.LoaderManager.LoaderCallbacks'
             loaderManager.initLoader(MOVIE_LOADER_ID, null, this);//.forceload();
-
+            updateMovies(moviePosters);
             errorMessage.setVisibility(View.GONE); // Hide the error message
 
         } else {
@@ -255,8 +261,8 @@ public class MainActivity extends AppCompatActivity
 
             progressBar.setVisibility(View.GONE);
 
-            if (moviePosters != null && !moviePosters.isEmpty()) {
-                moviePosters.addAll(moviePosters);
+            if (moviePosters != null && !moviePosters.isEmpty()) {//call a public method from here
+                MoviePosterAdapter.updateMovies(moviePosters);
             } else {
                 errorMessage.setVisibility(View.VISIBLE);
                 // Set empty state text to display "No movies available!"
