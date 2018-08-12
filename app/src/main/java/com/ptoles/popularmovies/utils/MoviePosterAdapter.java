@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Movie;
+import android.nfc.Tag;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +48,7 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
     private ArrayList<MoviePoster> moviePosters = new ArrayList<>();
     private Context moviePosterContext;
 
+    private static final String TAG = MoviePosterAdapter.class.getSimpleName();
 
 
      public MoviePosterAdapter(Context context, ArrayList<MoviePoster> moviePosters) {
@@ -65,12 +68,42 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
         // MoviePosterViewHolder viewHolder =
          return new MoviePosterViewHolder(view);
      }
-     @Override
-     public void onBindViewHolder(@NonNull MoviePosterViewHolder holder, int position) {
 
-     }
+    @Override
+    public void onBindViewHolder(@NonNull MoviePosterViewHolder holder, int position) {
 
-     @Override
+        MoviePoster currentMoviePoster = moviePosters.get(position);
+        ImageView ivPoster= (ImageView) holder.view;
+
+
+        if (currentMoviePoster != null) {
+            Picasso.get()
+                    .load(currentMoviePoster.getPosterPath())
+                    .noFade()
+                    //.resize(300,350)
+                    //.error(R.drawable.bug)//when we get an error
+                    .error(R.drawable.bug)//when we get an error
+                    .placeholder(R.drawable.loading_1)// as the image loads
+                    .into(ivPoster);
+        }else {
+
+            Picasso.get()
+                    .load(R.drawable.movie_poster_template_dark_no_image)
+                    .noFade()
+                    //.resize(300,350)
+                    //.error(R.drawable.bug)//when we get an error
+                    .error(R.drawable.bug)//when we get an error
+                    .placeholder(R.drawable.loading_1)// as the image loads
+                    .into(ivPoster);
+
+
+
+
+
+        }
+    }
+
+    @Override
      public int getItemCount() {
          return 0;
      }
@@ -100,11 +133,11 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
                 return ITEM_TYPE_UNKNOWN;
             }
 
+
         }
 
 
 
-        @NonNull
         public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             // Check if the existing view is being reused, otherwise inflate the view
             View listItemView = convertView;
@@ -179,5 +212,18 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
 
 
 
+/*
 
+            private void bind(final MoviePosterViewHolder holder) {
+               // holder.textView.setText("item " + holder.getAdapterPosition());
+                holder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final int position = holder.getAdapterPosition();
+                        Log.d("butt", "click " + position);
+                        MoviePosterAdapter.this.notifyItemChanged(position, "payload " + position);
+                    }
+                });
+
+ */
 

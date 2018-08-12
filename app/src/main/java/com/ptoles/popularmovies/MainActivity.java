@@ -31,6 +31,7 @@ interface MainActivityInterface{
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
@@ -130,24 +131,25 @@ public class MainActivity extends AppCompatActivity
 
 
         // 1 - Obtain a reference to my RecyclerView
-        moviePosterRecyclerView.setHasFixedSize(true);
+
+        this.moviePosterRecyclerView = findViewById(R.id.movie_poster_grid);
 
         ArrayList<MoviePoster> moviePosters = new ArrayList<>();
-        moviePosterRecyclerView = findViewById(R.id.movie_poster_grid);
-        moviePosterAdapter = new MoviePosterAdapter(this, moviePosters);
-        moviePosterRecyclerView.setAdapter(moviePosterAdapter);
+        this.moviePosterRecyclerView.setHasFixedSize(true);
+        this.moviePosterAdapter = new MoviePosterAdapter(this, moviePosters);
+        this.moviePosterRecyclerView.setAdapter(moviePosterAdapter);
 
 
-        errorMessage = findViewById(R.id.error_message_text_view);
+        this.errorMessage = findViewById(R.id.error_message_text_view);
 
         int numberOfColumns = getResources().getInteger(R.integer.num_columns);//2 or 4;
         RecyclerView.LayoutManager moviePosterLayoutManager = new GridLayoutManager(this, numberOfColumns);
-        moviePosterRecyclerView.setLayoutManager(moviePosterLayoutManager);
+        this.moviePosterRecyclerView.setLayoutManager(moviePosterLayoutManager);
 
 
 
         // Check for network connectivity before attempting to download  poster data
-        progressBar = findViewById(R.id.progressBar);
+        this.progressBar = findViewById(R.id.progressBar);
 
         // If there is a network connection, get the data
         if (isInternetAvailable()) {
@@ -247,8 +249,8 @@ public class MainActivity extends AppCompatActivity
         }
     }
     @Override
-//         public void onLoadFinished(@NonNull android.support.v4.content.Loader<List<Movies>> loader, List<Movies> movies) {
-    public void onLoadFinished(Loader<List<MoviePoster>> loader, List<MoviePoster> moviePosters) {
+         public void onLoadFinished(@NonNull android.support.v4.content.Loader<List<MoviePoster>> loader, List<MoviePoster> moviePosters) {
+ //   public void onLoadFinished(Loader<List<MoviePoster>> loader, List<MoviePoster> moviePosters) {
             // Hide(i.e. setVisibility(View.GONE) ) the progressBar since the data has finished loading
 
             progressBar.setVisibility(View.GONE);

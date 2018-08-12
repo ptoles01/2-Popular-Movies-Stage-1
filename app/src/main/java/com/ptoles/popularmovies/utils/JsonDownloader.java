@@ -47,8 +47,8 @@ class JsonDownloader extends AsyncTaskLoader<List<MoviePoster>> {
 
             Toast.makeText(context, jsonData, Toast.LENGTH_SHORT).show();
         }else{
-            // parseData
-           moviePosters = JsonDownloader.DownloadMovieData(jsonURL);
+            // You should now have items in your movie poster array list
+           //moviePosters = JsonDownloader.DownloadMovieData(jsonURL);
         }
 
         for ( int thisPoster = 0; thisPoster <moviePosters.size(); thisPoster++){
