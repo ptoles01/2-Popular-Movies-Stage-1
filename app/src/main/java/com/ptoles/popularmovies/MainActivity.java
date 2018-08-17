@@ -30,21 +30,29 @@ interface MainActivityInterface{
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+
+import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
+
+import android.app.LoaderManager;
+import android.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+
+import java.util.ArrayList;
+import java.util.List;
 
 import com.ptoles.popularmovies.model.MoviePoster;
 import com.ptoles.popularmovies.utils.JsonParser;
@@ -53,15 +61,11 @@ import com.ptoles.popularmovies.utils.MoviePosterLoader;
 import com.ptoles.popularmovies.utils.NetworkUtils;
 import com.ptoles.popularmovies.utils.MovieSortPreferences;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static com.ptoles.popularmovies.utils.JsonParser.*;
-import static com.ptoles.popularmovies.utils.MoviePosterAdapter.*;
 
-public class MainActivity extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<List<MoviePoster>>,
-        //MoviePosterAdapter.ListItemClickListener,
+public class MainActivity extends AppCompatActivity implements
+         LoaderManager.LoaderCallbacks<List<MoviePoster>>,
+       // MoviePosterAdapter.ListItemClickListener,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -71,7 +75,7 @@ public class MainActivity extends AppCompatActivity
 
     private TextView errorMessage;
 
-    private MoviePosterAdapter moviePosterAdapter;
+    MoviePosterAdapter moviePosterAdapter;
     private String orderBy;
     private RecyclerView moviePosterRecyclerView;
 
@@ -83,18 +87,22 @@ public class MainActivity extends AppCompatActivity
 
     SharedPreferences sharedPreferences;
 
+    RecyclerView moviePosterGrid;
+
+    RecyclerView.LayoutManager moviePosterLayoutManager;
+    private ArrayList<MoviePoster> moviePosters;
+
+    android.support.v4.app.LoaderManager.LoaderCallbacks<MoviePoster> myLoaderCallbacks;
 
 
     // URL to query the movie database
     private static final String MOVIE_MOST_POPULAR_URL =
-            "https://api.themoviedb.org/3/movie?sort_by=popularity.desc&api_key="+apiKey;
-            //"https://api.themoviedb.org/3/movie/popular?&api_key="+apiKey;
+            "https://api.themoviedb.org/3/movie/popular?&api_key="+apiKey;
 
-    private static final String MOVIE_HIGH_RATED_URL =
-            "https://api.themoviedb.org/3/movie?sort_by=top_rated.desc&api_key="+apiKey;
-           // "https://api.themoviedb.org/3/movie/top_rated?&api_key="+apiKey;
+    private static final String MOVIE_TOP_RATED_URL =
+            "https://api.themoviedb.org/3/movie/top_rated?&api_key="+apiKey;
 
-
+    //https://api.themoviedb.org/3/movie/top_rated?api_key=75fa203cc819faba4f627132ce414b9c
     public ImageView getMoviePosterImageView() {
         return moviePosterImageView;
     }
@@ -124,50 +132,53 @@ public class MainActivity extends AppCompatActivity
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         //https://www.youtube.com/watch?v=WBbsvqSu0is - sending parcelable bundle between activities
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        orderBy = sharedPreferences.getString(
+                // Set the orderBy key to be whatever is already indicated in the class
+       orderBy = sharedPreferences.getString(
                 getString(R.string.settings_order_by_key),
                 getString(R.string.settings_order_by_default));
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+                // now register your listener for changes
 
 
         // 1 - Obtain a reference to my RecyclerView
 
-        this.moviePosterRecyclerView = findViewById(R.id.movie_poster_grid);
+        moviePosterRecyclerView = findViewById(R.id.movie_poster_grid);
 
-        ArrayList<MoviePoster> moviePosters = new ArrayList<>();
-        this.moviePosterRecyclerView.setHasFixedSize(true);
-        this.moviePosterAdapter = new MoviePosterAdapter(this, moviePosters);
-        this.moviePosterRecyclerView.setAdapter(moviePosterAdapter);
+        errorMessage = findViewById(R.id.error_message_text_view);
 
-        this.moviePosterImageView  = findViewById(R.id.poster_image_view);
-        this.errorMessage = findViewById(R.id.error_message_text_view);
+        moviePosterRecyclerView.setHasFixedSize(true);
 
         int numberOfColumns = getResources().getInteger(R.integer.num_columns);//2 or 4;
-        RecyclerView.LayoutManager moviePosterLayoutManager = new GridLayoutManager(this, numberOfColumns);
-        this.moviePosterRecyclerView.setLayoutManager(moviePosterLayoutManager);
+        moviePosterLayoutManager = new GridLayoutManager(this, numberOfColumns);
+        moviePosterRecyclerView.setLayoutManager(moviePosterLayoutManager);
+
+        //moviePosters = new ArrayList<>();
+        moviePosterAdapter = new MoviePosterAdapter(this, moviePosters);
+
+        moviePosterRecyclerView.setAdapter(moviePosterAdapter);
 
 
 
         // Check for network connectivity before attempting to download  poster data
-        this.progressBar = findViewById(R.id.progressBar);
+        progressBar = findViewById(R.id.progressBar);
 
         // If there is a network connection, get the data
         if (isInternetAvailable()) {
             // Get a reference to the LoaderManager, in order to interact with loaders.
-            LoaderManager loaderManager = getSupportLoaderManager();
+            LoaderManager loaderManager = getLoaderManager();
           //  Toast.makeText(this,"You are online!!!!",Toast.LENGTH_LONG).show();
 
             //https://stackoverflow.com/questions/41267446/how-to-get-loadermanager-initloader-working-within-a-fragment
             //implementation 'com.android.support.v4.app.LoaderManager.LoaderCallbacks'
             //    implementation 'com.android.support.v4.app.LoaderManager.LoaderCallbacks'
             loaderManager.initLoader(MOVIE_LOADER_ID, null, this);//.forceload();
-            updateMovies(moviePosters);
+
             errorMessage.setVisibility(View.GONE); // Hide the error message
 
         } else {
@@ -213,61 +224,61 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu mainMenu) {
-        /*MenuInflater inflater = */ getMenuInflater();
+        //*MenuInflater inflater
         getMenuInflater().inflate(R.menu.main_menu, mainMenu);
         return true;
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // https://stackoverflow.com/questions/20873777/how-to-open-an-activity-after-clicking-on-a-menu-item
-        Intent intent;
+
         int id = item.getItemId();
-        switch (id){
-            case R.id.action_settings:
-                intent = SettingsActivity.makeIntent(MainActivity.this);
-
-                startActivity(intent);
-                return true;
-                //break;
-
-
-            default:
-                return super.onOptionsItemSelected(item);
-
+        if (id == R.id.action_settings) {
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsIntent);
+            return true;
         }
-
+        return super.onOptionsItemSelected(item);
 
     } // end - public boolean onOptionsItemSelected(MenuItem item)
 
 
-    @Override
-    public android.support.v4.content.Loader<List<MoviePoster>> onCreateLoader(int id, Bundle bundle) {
+    //@Override
+    public Loader<List<MoviePoster>> onCreateLoader(int id, Bundle bundle) {
 
         String preferredSortOrder = MovieSortPreferences.getPreferredSortOrder(this);
-
+        Uri moviePosterUri = null;
+        String moviePosterString = null;
 
         if (preferredSortOrder.equals(getString(R.string.pref_most_popular_key))) {
             Log.d(TAG, "LoadInBackground: use URL for most popular");
-            return new MoviePosterLoader(this, JsonParser.mostPopularUrl);
+            moviePosterUri = Uri.parse(JsonParser.mostPopularUrl);
+            moviePosterString = JsonParser.mostPopularUrl.toString();
+
         } else {
             Log.d(TAG, "LoadInBackground: use URL for highest rated");
-            return new MoviePosterLoader(this, JsonParser.topRatedUrl);
+            //return new MoviePosterLoader(this, MOVIE_TOP_RATED_URL);
+            moviePosterUri = Uri.parse(JsonParser.topRatedUrl);
+            moviePosterString = JsonParser.topRatedUrl.toString();
         }
+        return new MoviePosterLoader(this, moviePosterString);
     }
+
     @Override
-         public void onLoadFinished(@NonNull android.support.v4.content.Loader<List<MoviePoster>> loader, List<MoviePoster> moviePosters) {
+
+    public void onLoadFinished(Loader<List<MoviePoster>> loader, List<MoviePoster> moviePosters) {
  //   public void onLoadFinished(Loader<List<MoviePoster>> loader, List<MoviePoster> moviePosters) {
             // Hide(i.e. setVisibility(View.GONE) ) the progressBar since the data has finished loading
 
             progressBar.setVisibility(View.GONE);
 
             if (moviePosters != null && !moviePosters.isEmpty()) {//call a public method from here
-                MoviePosterAdapter.updateMovies(moviePosters);
+                moviePosterAdapter.updateMovies(moviePosters);
             } else {
                 errorMessage.setVisibility(View.VISIBLE);
-                // Set empty state text to display "No movies available!"
-                errorMessage.setText(R.string.no_movies_available);
+
             }
+            // Set empty state text to display "No movies available!"
+            errorMessage.setText(R.string.no_movies_available);
 
             moviePosterAdapter.notifyDataSetChanged();
         }
@@ -298,13 +309,41 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        boolean PREFERENCES_UPDATED = true;
-        if (PREFERENCES_UPDATED) {
-            Log.d(TAG, "onSharedPreferenceChanged: preferences were changed");
+       // boolean PREFERENCES_UPDATED = true;
+        boolean PREFERENCES_UPDATED=true;
+        String defaultSortOrder = getString(R.string.settings_order_by_default);
+        //String currentSortOrder = sharedPreferences.getString(key, orderBy);
+        String popularSortOrder = getString(R.string.pref_most_popular_key);
+        String topRatedSortOrder = getString(R.string.pref_top_rated_key);
+        String newSortOrder = null;
 
-            getSupportLoaderManager().restartLoader(MOVIE_LOADER_ID, null, this);
-            PREFERENCES_UPDATED = false;
+        //PREFERENCES_UPDATED = (!currentSortOrder.equals(defaultSortOrder));
+
+       // if(PREFERENCES_UPDATED){
+
+            String currentSortOrder = sharedPreferences.getString(key, getString(R.string.settings_order_by_default));
+            if (currentSortOrder.equals(getString(R.string.settings_order_top_rated)) ||
+                    currentSortOrder.equals(getString(R.string.settings_order_most_popular))) {
+                if (!currentSortOrder.equals(orderBy)) {
+                    orderBy = null;
+                    orderBy = currentSortOrder;
+                    android.app.LoaderManager loaderManager = getLoaderManager();
+                    loaderManager.restartLoader(MOVIE_LOADER_ID, null,  this);
+                }
+            } else if (currentSortOrder.equals(getString(R.string.setting_order_favorite))) {
+            //Intent favoriteIntent = new Intent(this, FavoriteMovieActivity.class);
+            //startActivity(favoriteIntent);
         }
+
+           // }
+
+        PREFERENCES_UPDATED = false;
+
+        }
+
+   // @Override
+    public void onListItemClick(int clickedPosition) {
+
     }
   /*
 
