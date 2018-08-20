@@ -70,7 +70,7 @@ import static com.ptoles.popularmovies.utils.JsonParser.*;
 
 public class MainActivity extends AppCompatActivity implements
          LoaderManager.LoaderCallbacks<List<MoviePoster>>,
-        SharedPreferences.OnSharedPreferenceChangeListener {
+        SharedPreferences.OnSharedPreferenceChangeListener, MoviePosterAdapter.ListItemClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -294,19 +294,26 @@ public class MainActivity extends AppCompatActivity implements
 
     public void onLoadFinished(Loader<List<MoviePoster>> loader, List<MoviePoster> moviePosters) {
 
+        if (moviePosters == null) {
+            Log.e("LoadFinished", "Load finished with no movie posters! bailing");
+            return;
+        }
+        Log.d("LoadFinished", "Got movie posters: " + moviePosters.size());
+
             progressBar.setVisibility(View.GONE);
                 // Hide(i.e. setVisibility(View.GONE) ) the progressBar since the data has finished loading
             if (moviePosters != null && !moviePosters.isEmpty()) {//call a public method from here
+                Log.d("LoadFinished", "going to update movies");
                 moviePosterAdapter.updateMovies(moviePosters);
             } else {
+                Log.e("LoadFinished", "have no posters?!");
                 errorMessage.setVisibility(View.VISIBLE);
-
+                // Set empty state text to display "No movies available!"
+                errorMessage.setText(R.string.no_movies_available);
             }
             if (moviePosition != RecyclerView.NO_POSITION) {
                moviePosterRecyclerView.scrollToPosition(moviePosition);
             }
-            // Set empty state text to display "No movies available!"
-            errorMessage.setText(R.string.no_movies_available);
 
           //  moviePosterAdapter.notifyDataSetChanged();
         }

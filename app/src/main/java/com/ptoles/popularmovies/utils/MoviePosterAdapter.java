@@ -52,6 +52,7 @@ public class MoviePosterAdapter extends
     private ListItemClickListener moviePosterListener;
 
     public MoviePosterAdapter(MainActivity mainActivity, ArrayList<MoviePoster> moviePosters) {
+        this(mainActivity, moviePosters, mainActivity)
     }
 
 
@@ -67,7 +68,7 @@ public class MoviePosterAdapter extends
      }
 
     public void updateMovies(List<MoviePoster> newMoviePosters) {
-         moviePosters = newMoviePosters;
+        this.moviePosters = newMoviePosters;
         notifyDataSetChanged();
 
     }
@@ -86,7 +87,7 @@ public class MoviePosterAdapter extends
      }
     @Override
     public int getItemCount() {
-        return moviePosters.size();
+        return moviePosters != null ? moviePosters.size() : 0;
     }
 
     @Override
