@@ -1,30 +1,26 @@
 package com.ptoles.popularmovies.utils;
 
-import android.app.Activity;
+
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Movie;
-import android.media.Image;
-import android.nfc.Tag;
+
+
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v7.widget.RecyclerView;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.GridView;
+
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
+//import com.google.gson.Gson;
 
 import com.ptoles.popularmovies.*;
 import com.ptoles.popularmovies.model.MoviePoster;
 import com.squareup.picasso.Picasso;
 
-import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,58 +37,74 @@ import java.util.List;
 
 
 
-public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.MoviePosterViewHolder>{
-//https://stackoverflow.com/questions/40683817/how-to-set-two-adapters-to-one-recyclerview
+public class MoviePosterAdapter extends
+        RecyclerView.Adapter<MoviePosterAdapter.MoviePosterViewHolder>{
+    private static final String TAG = MoviePosterAdapter.class.getSimpleName();
+
+    //https://stackoverflow.com/questions/40683817/how-to-set-two-adapters-to-one-recyclerview
     private static final int ITEM_TYPE_MOVIE_POSTER = 0;
     private static final int ITEM_TYPE_UNKNOWN = -1;
 
 
 
-    private static ArrayList<MoviePoster> moviePosters = new ArrayList<>();
+    private List<MoviePoster> moviePosters;
     private Context moviePosterContext;
+    private ListItemClickListener moviePosterListener;
 
-
-    private static final String TAG = MoviePosterAdapter.class.getSimpleName();
-
-
-     public MoviePosterAdapter(Context context, ArrayList<MoviePoster> moviePosters) {
-
-         this.moviePosterContext = context;
-         MoviePosterAdapter.moviePosters = moviePosters;
-     }
-
-    public static void updateMovies(List<MoviePoster> newMoviePosters) {
-         moviePosters = (ArrayList<MoviePoster>) newMoviePosters;
+    public MoviePosterAdapter(MainActivity mainActivity, ArrayList<MoviePoster> moviePosters) {
     }
 
-     @NonNull
+
+    public interface ListItemClickListener {
+        void onListItemClick(int clickedPosition);
+    }
+
+     public MoviePosterAdapter(Context context, List<MoviePoster> newMoviePosters, ListItemClickListener listener) {
+
+         moviePosterContext = context;
+         this.moviePosters = newMoviePosters;
+         moviePosterListener = listener;
+     }
+
+    public void updateMovies(List<MoviePoster> newMoviePosters) {
+         moviePosters = newMoviePosters;
+        notifyDataSetChanged();
+
+    }
+
+
+    @NonNull
      @Override
      public MoviePosterViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-         LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-         View view =  layoutInflater.inflate(R.layout.grid_item, parent, false);
+         //LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+         // View view =  layoutInflater.inflate(R.layout.grid_item, parent, false);
 
-        // MoviePosterViewHolder viewHolder =
+         // MoviePosterViewHolder viewHolder =
+         View view = LayoutInflater.from(moviePosterContext)
+                 .inflate(R.layout.grid_item, parent, false);
          return new MoviePosterViewHolder(view);
      }
+    @Override
+    public int getItemCount() {
+        return moviePosters.size();
+    }
 
     @Override
     public void onBindViewHolder(@NonNull MoviePosterViewHolder holder, int position) {
 
         MoviePoster currentMoviePoster = moviePosters.get(position);
         ImageView moviePosterImageView= holder.imageView;
-
-        if (currentMoviePoster != null) {
-            Picasso.get()
+        if (currentMoviePoster != null){
+            Picasso.with(moviePosterImageView.getContext())
                     .load(currentMoviePoster.getPosterPath())
                     .noFade()
                     //.resize(300,350)
                     //.error(R.drawable.bug)//when we get an error
                     .error(R.drawable.bug)//when we get an error
                     .placeholder(R.drawable.loading_1)// as the image loads
-                    .into(moviePosterImageView);
-        }else {
-
-            Picasso.get()
+                    .into(moviePosterImageView) ;
+        }else{
+            Picasso.with(moviePosterImageView.getContext())
                     .load(R.drawable.movie_poster_template_dark_no_image)
                     .noFade()
                     //.resize(300,350)
@@ -100,17 +112,13 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
                     .error(R.drawable.bug)//when we get an error
                     .placeholder(R.drawable.loading_1)// as the image loads
                     .into(moviePosterImageView);
-
         }
+
     }
 
-    @Override
-     public int getItemCount() {
-         return 0;
-     }
 
 
-     public class MoviePosterViewHolder extends RecyclerView.ViewHolder {
+     public class MoviePosterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
          private Context moviePosterContext;
 
          View view = itemView;
@@ -118,66 +126,47 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
          TextView releaseDateView = view.findViewById(R.id.release_date_tv);//(TextView)
          TextView ratingView = view.findViewById(R.id.vote_average_tv);//(TextView)
          TextView synopsisView = view.findViewById(R.id.overview_tv); //(TextView)
-         ImageView imageView = view.findViewById(R.id.poster_image_view);
+         private ImageView imageView;
 
          public MoviePosterViewHolder(View itemView) {
              super(itemView);
-             moviePosterContext = itemView.getContext();
+             imageView = itemView.findViewById(R.id.poster_image_view); //(ImageView)
+             itemView.setOnClickListener(this);
          }
 
-         public ImageView getImageView() {
-             return imageView;
+         @Override
+         public void onClick(View view) {
+
+             int clickedPosition = getAdapterPosition();
+             moviePosterListener.onListItemClick(clickedPosition);
+
+             MoviePoster currentMovie = moviePosters.get(clickedPosition);
+             //Gson gson = new Gson();
+
+             Intent intent = new Intent(moviePosterContext, DetailActivity.class);
+             intent.putExtra("key", /*gson.toJson*/(currentMovie)); //Optional parameters
+
+             moviePosterContext.startActivity(intent);
          }
+     }
+
+
+
 
         public int getItemViewType(int position) {
 
-            if (moviePosters.get(position) instanceof MoviePoster) {
+            if (moviePosters.get(position) != null) {
                 return ITEM_TYPE_MOVIE_POSTER;
             } else {
                 return ITEM_TYPE_UNKNOWN;
             }
 
 
-        }
+        }// inner class MoviePosterViewHolder
 
 
-
-        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-            // Check if the existing view is being reused, otherwise inflate the view
-            View listItemView = convertView;
-            if (listItemView == null) {
-                listItemView = LayoutInflater.from(moviePosterContext).inflate(
-                        R.layout.grid_item, parent, false);
-            }
-            // Get the {@link MoviePoster} object located at this position in the list
-            MoviePoster currentMoviePoster = moviePosters.get(position);
-            ImageView ivPoster = listItemView.findViewById(R.id.poster_image_view);
-
-
-            if (ivPoster == null) {
-                //get the layout from the xml file
-                listItemView = LayoutInflater
-                        .from(moviePosterContext)
-                        .inflate(R.layout.activity_blank_poster_thumbnail, null);
-
-                ivPoster = new ImageView(moviePosterContext);
-                ivPoster.setAdjustViewBounds(true);
-            }
-
-            if (currentMoviePoster != null) {
-                Picasso.get()
-                        .load(currentMoviePoster.getPosterPath())
-                        .noFade()
-                        //.resize(300,350)
-                        //.error(R.drawable.bug)//when we get an error
-                        .error(R.drawable.movie_poster_template_dark_no_image)//when we get an error
-                        .placeholder(R.drawable.loading_1)// as the image loads
-                        .into(ivPoster);
-            }
-            return listItemView;
-        }// getView
-     }// inner class MoviePosterViewHolder
- }// class MoviePosterAdapter
+     }
+ // class MoviePosterAdapter
     //@32:30 - https://www.youtube.com/watch?v=yP8KKpKEXYc
 // https://antonioleiva.com/recyclerview/
 
@@ -212,22 +201,4 @@ public class MoviePosterAdapter extends RecyclerView.Adapter<MoviePosterAdapter.
     //      noFade – by default, the image fades in if loaded from the disc cache or from the network. We’ve disabled the fade-in
     //      centerCrop – crops the image so it fits inside our dimensions
     //      into – asynchronously loads the image into this image view
-
-
-
-
-/*
-
-            private void bind(final MoviePosterViewHolder holder) {
-               // holder.textView.setText("item " + holder.getAdapterPosition());
-                holder.itemView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        final int position = holder.getAdapterPosition();
-                        Log.d("butt", "click " + position);
-                        MoviePosterAdapter.this.notifyItemChanged(position, "payload " + position);
-                    }
-                });
-
- */
 

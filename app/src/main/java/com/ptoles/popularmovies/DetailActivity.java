@@ -10,13 +10,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
+
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.google.gson.Gson;
 import com.ptoles.popularmovies.model.MoviePoster;
 import com.ptoles.popularmovies.utils.MoviePosterAdapter;
 import com.squareup.picasso.Picasso;
@@ -37,7 +36,7 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_blank_poster_thumbnail);
 
-        ImageView mpImageView = findViewById(R.id.poster_image_view);
+        ImageView mpImageView = (ImageView) findViewById(R.id.poster_image_view);
 
         Intent intent       = getIntent(); Log.d(TAG, "getIntent() line 30.");
         MoviePoster moviePoster = intent.getParcelableExtra("Movie Poster");
@@ -45,20 +44,20 @@ public class DetailActivity extends AppCompatActivity {
                 //see MoviePosterAdapter for this reference
 
         if (moviePoster != null) {
-            TextView titleView = findViewById(R.id.original_title_tv);//(TextView)
+            TextView titleView = (TextView) findViewById(R.id.original_title_tv);//(TextView)
             titleView.setText(moviePoster.getOriginalTitle());
 
-            TextView releaseDateView = findViewById(R.id.release_date_tv);//(TextView)
+            TextView releaseDateView = (TextView) findViewById(R.id.release_date_tv);//(TextView)
             releaseDateView.setText("Released: " + moviePoster.getReleaseDate());
 
-            TextView ratingView = findViewById(R.id.vote_average_tv);//(TextView)
+            TextView ratingView = (TextView) findViewById(R.id.vote_average_tv);//(TextView)
             ratingView.setText("Viewer rating: " + moviePoster.getVoteAverage() + "/10");
 
-            TextView synopsisView = findViewById(R.id.overview_tv); //(TextView)
+            TextView synopsisView = (TextView) findViewById(R.id.overview_tv); //(TextView)
             synopsisView.setText(moviePoster.getOverview());
 
 //with(mpContext)
-            Picasso.get()
+            Picasso.with(mpImageView.getContext())
                     .load(moviePoster.getPosterPath()) /* or .getBackdropPath()*/
                     .noFade()
                     //.resize(300,350)
@@ -68,7 +67,7 @@ public class DetailActivity extends AppCompatActivity {
                     .into(mpImageView); /* or holder.mpImageView*/
         } else {
 
-            Picasso.get()
+            Picasso.with(mpImageView.getContext())
                     .load(R.drawable.movie_poster_template_dark_no_image) /* or .getBackdropPath()*/
                     .noFade()
                     //.resize(300,350)

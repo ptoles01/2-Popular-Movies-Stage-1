@@ -32,15 +32,17 @@ class JsonDownloader extends AsyncTaskLoader<List<MoviePoster>> {
     String jsonURLIsNull = "";// it is required that this remains an empty string
                               // because the first test in the JsonParser code is
                               // for an empty string
-    private static List<MoviePoster> moviePosters = new ArrayList<>();
+    private static List<MoviePoster> moviePosters;
 
     private JsonDownloader(Context context) {
         super(context);
+        moviePosters = new ArrayList<>();
     }
 
     private JsonDownloader(Context context, String jsonData) {
         super(context);
         ProgressBar progressBar = new ProgressBar(context);
+        moviePosters = new ArrayList<>();
         jsonURL = jsonData;
 
         if (jsonData.startsWith("Error")){
@@ -48,10 +50,10 @@ class JsonDownloader extends AsyncTaskLoader<List<MoviePoster>> {
             Toast.makeText(context, jsonData, Toast.LENGTH_SHORT).show();
         }else{
             // You should now have items in your movie poster array list
-           //moviePosters = JsonDownloader.DownloadMovieData(jsonURL);
+           moviePosters = JsonDownloader.DownloadMovieData(jsonURL);
         }
 
-        for ( int thisPoster = 0; thisPoster <moviePosters.size(); thisPoster++){
+        for (int thisPoster = 0; thisPoster <moviePosters.size(); thisPoster++){
 
            Log.i(TAG, moviePosters.get(thisPoster).toString());
 

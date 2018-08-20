@@ -1,6 +1,7 @@
 package com.ptoles.popularmovies.utils;
 
 //import android.support.v7.recyclerview.BuildConfig;
+import android.content.Loader;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -52,8 +53,10 @@ public class JsonParser {
     /* 2 */ final String SORT_BY_POPULARITY = "sort_by=popularity.desc&";
     /* 3 */ final String SORT_BY_AVERAGE_RATING = "sort_by=vote_average.desc&";
     /* 5 */ final String API_KEY = "api_key=" + apiKey;
-    public static final String topRatedUrl = "https://api.themoviedb.org/3/movie/top_rated?api_key=" + apiKey + "&language=en-US";
-    public static final String mostPopularUrl = "https://api.themoviedb.org/3/movie/popular?api_key=" + apiKey + "&language=en-US";
+    public static final String topRatedUrl = "https://api.themoviedb.org/3/movie/top_rated?api_key="+apiKey;//"?&language=en-US";
+//    public static final String topRatedUrl = "https://api.themoviedb.org/3/movie?sort_by=top_rated.desc?api_key="+apiKey+"&language=en-US";
+    public static final String mostPopularUrl = "https://api.themoviedb.org/3/movie/popular?api_key="+apiKey;//+"?&language=en-US";
+ //   public static final String mostPopularUrl = "https://api.themoviedb.org/3/movie?sort_by=popularity.desc?api_key="+apiKey+"&language=en-US";
 
     public final static String URL_BASE = "http://api.themoviedb.org/3/discover/movie";
     // URL to query the movie database
@@ -66,6 +69,10 @@ public class JsonParser {
     private static final String POSTER_URL = "http://image.tmdb.org/t/p/w185";
     private static final String BACKDROP_URL = "http://image.tmdb.org/t/p/original";
 
+    //final static String BASE_URL = "http://api.themoviedb.org/3/movie/";
+    //TODO: add your API key Here
+
+    final static String BEFORE_API_KEY = "?api_key=";
 
     //            URL url = new URL("http://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=...");
     public static List<MoviePoster> parseMoviesFromJson(String jsonData) {
@@ -167,6 +174,7 @@ public class JsonParser {
 
                 moviePosters.add(moviePoster);
                 Log.d(TAG, "line 152 reached");
+
 
 
             }// end for loop

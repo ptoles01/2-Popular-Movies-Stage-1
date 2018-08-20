@@ -1,6 +1,8 @@
 package com.ptoles.popularmovies.utils;
 
+import android.app.LoaderManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
@@ -19,4 +21,6 @@ public class MovieSortPreferences {
 
         return sharedPreferences.getString(sortOrderKey, defaultSortOrder);
     }
+
+
 }
