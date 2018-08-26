@@ -5,6 +5,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!-- Step 3 from: -->
+    <!-- https://www.specbee.com/blogs/android-tutorials-recyclerview-and-its-item-click-listener-part-1-->
+    <!-- Create layout activity_main.xml file in which we should implement Recyclerview -->
     <android.support.v7.widget.RecyclerView
         android:id="@+id/movie_poster_grid"
         android:layout_width="match_parent"

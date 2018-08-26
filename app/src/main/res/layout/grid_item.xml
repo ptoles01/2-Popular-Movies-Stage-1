@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="302dp"
     >
-
+    <!-- See additional layout examples at: -->
+    <!-- https://www.specbee.com/blogs/android-tutorials-recyclerview-and-its-item-click-listener-part-1 -->
     <ImageView
         android:id="@+id/poster_image_view"
         android:layout_width="0dp"

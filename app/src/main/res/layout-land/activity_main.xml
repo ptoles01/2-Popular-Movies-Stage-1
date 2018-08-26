@@ -5,6 +5,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <!-- Step 3 from: -->
+    <!-- https://www.specbee.com/blogs/android-tutorials-recyclerview-and-its-item-click-listener-part-1-->
+    <!-- Create layout activity_main.xml file in which we should implement Recyclerview -->
+    <!-- See additional layout examples at: -->
+    <!-- https://gist.github.com/Isabellle/d66ccbc7e88dc8c9b3429cf3ea8b6d97 -->
     <android.support.v7.widget.RecyclerView
         android:id="@+id/movie_poster_grid"
         android:orientation="horizontal"

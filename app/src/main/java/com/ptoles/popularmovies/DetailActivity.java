@@ -36,24 +36,24 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_blank_poster_thumbnail);
 
-        ImageView mpImageView = (ImageView) findViewById(R.id.poster_image_view);
+        ImageView mpImageView = findViewById(R.id.poster_image_view);
 
         Intent intent       = getIntent(); Log.d(TAG, "getIntent() line 30.");
-        MoviePoster moviePoster = intent.getParcelableExtra("Movie Poster");
+        MoviePoster moviePoster = intent.getParcelableExtra("moviePoster"); //from MoviePosterAdapter
                 //https://www.youtube.com/watch?v=WBbsvqSu0is - Send Custom Object Using Parcelable
                 //see MoviePosterAdapter for this reference
 
         if (moviePoster != null) {
-            TextView titleView = (TextView) findViewById(R.id.original_title_tv);//(TextView)
+            TextView titleView = findViewById(R.id.original_title_tv);//(TextView)
             titleView.setText(moviePoster.getOriginalTitle());
 
-            TextView releaseDateView = (TextView) findViewById(R.id.release_date_tv);//(TextView)
+            TextView releaseDateView = findViewById(R.id.release_date_tv);//(TextView)
             releaseDateView.setText("Released: " + moviePoster.getReleaseDate());
 
-            TextView ratingView = (TextView) findViewById(R.id.vote_average_tv);//(TextView)
+            TextView ratingView = findViewById(R.id.vote_average_tv);//(TextView)
             ratingView.setText("Viewer rating: " + moviePoster.getVoteAverage() + "/10");
 
-            TextView synopsisView = (TextView) findViewById(R.id.overview_tv); //(TextView)
+            TextView synopsisView = findViewById(R.id.overview_tv); //(TextView)
             synopsisView.setText(moviePoster.getOverview());
 
 //with(mpContext)

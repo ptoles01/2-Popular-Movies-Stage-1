@@ -42,8 +42,6 @@ public class MoviePoster implements Parcelable{
 
     private static final String dateFormatTMDB = "yyyy-MM-dd";
 
-    public MoviePoster() {
-    }
 
     // All argument constructor
     public MoviePoster(Double voteCount,        String id,                Boolean video,
