@@ -253,6 +253,7 @@ public class MainActivity extends AppCompatActivity
 
 
         Context moviePosterContext = recyclerView.getContext();
+        //TODO: 1 - Determine why moviePosters has size 0 at this point in the code
         MoviePoster currentMovie = moviePosters.get(clickedPosition);
 
         Intent detailActivityIntent = new Intent(this, DetailActivity.class);
