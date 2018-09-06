@@ -38,6 +38,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -59,7 +60,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ptoles.popularmovies.model.MoviePoster;
-import com.ptoles.popularmovies.utils.CustomMoviePosterClickListener;
+import com.ptoles.popularmovies.utils.ItemClickListener;
 import com.ptoles.popularmovies.utils.JsonParser;
 import com.ptoles.popularmovies.utils.MoviePosterAdapter;
 import com.ptoles.popularmovies.utils.MoviePosterLoader;
@@ -67,11 +68,12 @@ import com.ptoles.popularmovies.utils.NetworkUtils;
 import com.ptoles.popularmovies.utils.MovieSortPreferences;
 
 import static com.ptoles.popularmovies.utils.JsonParser.*;
+import static com.ptoles.popularmovies.utils.MoviePosterAdapter.*;
 
 public class MainActivity extends AppCompatActivity
                             implements  LoaderManager.LoaderCallbacks<List<MoviePoster>>,
                                         SharedPreferences.OnSharedPreferenceChangeListener,
-        CustomMoviePosterClickListener {
+        ItemClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -80,13 +82,23 @@ public class MainActivity extends AppCompatActivity
 
     private TextView errorMessage;
 
-    MoviePosterAdapter moviePosterAdapter;
-    CustomMoviePosterClickListener moviePosterClickListener;
-    private String orderBy;
     private RecyclerView moviePosterRecyclerView;
+    private MoviePosterAdapter moviePosterAdapter;
+    private ArrayList<MoviePoster> moviePosters = new ArrayList<>();
+
+
+    public ArrayList<MoviePoster> getMoviePosters() {
+        return moviePosters;
+    }
+    public void setMoviePosters(ArrayList<MoviePoster> moviePosters) {
+        this.moviePosters = moviePosters;
+    }
+
+
+    ItemClickListener moviePosterClickListener;
+    private String orderBy;
 
     private ImageView moviePosterImageView;
-    ArrayList<MoviePoster> moviePosters;
     private int moviePosition;
 
     private ProgressBar progressBar;
@@ -166,9 +178,9 @@ public class MainActivity extends AppCompatActivity
 
 
     // 1 - Define my data source
-            moviePosters = new ArrayList<>();
+           // moviePosters = new ArrayList<MoviePoster>();
 
-    // 3 - Obtain a reference to my RecyclerView
+            // 3 - Obtain a reference to my RecyclerView
 
             moviePosterRecyclerView = findViewById(R.id.movie_poster_grid);
             moviePosterRecyclerView.setVisibility(View.VISIBLE);//
@@ -183,10 +195,8 @@ public class MainActivity extends AppCompatActivity
             moviePosterRecyclerView.setLayoutManager(moviePosterLayoutManager);
 
             // create the adapter for the recyclerview (i.e. moviePosterRecyclerView )
-            moviePosterAdapter = new MoviePosterAdapter(this, moviePosters,moviePosterClickListener);
+            moviePosterAdapter = new MoviePosterAdapter(this, moviePosters,R.layout.grid_item );
 
-            // now, set the adapter for the recyclerview
-            moviePosterRecyclerView.setAdapter(moviePosterAdapter);
 
     // 4 - Obtain a reference to my progress bar
             progressBar = findViewById(R.id.progressBar);
@@ -222,9 +232,8 @@ public class MainActivity extends AppCompatActivity
             //https://stackoverflow.com/questions/41267446/how-to-get-loadermanager-initloader-working-within-a-fragment
             //implementation 'com.android.support.v4.app.LoaderManager.LoaderCallbacks'
             //    implementation 'com.android.support.v4.app.LoaderManager.LoaderCallbacks'
-            loaderManager.initLoader(MOVIE_LOADER_ID, null, this);//.forceload();
-
-           // errorMessage.setVisibility(View.GONE); // Hide the error message
+           loaderManager.initLoader(MOVIE_LOADER_ID, null, this);//.forceload();
+                    // errorMessage.setVisibility(View.GONE); // Hide the error message
 
             // Otherwise, hide the progress bar then display an error message
             // Hide the progress bar before
@@ -236,7 +245,21 @@ public class MainActivity extends AppCompatActivity
 
 
     }// end - onCreate(Bundle savedInstanceState)
+
     //https://www.learnhowtoprogram.com/android/web-service-backends-and-custom-fragments/custom-adapters-with-recyclerview
+    // 7 - Specify the onItemClick Listener
+    @Override
+    public void onItemClick(View recyclerView, int clickedPosition) {
+
+
+        Context moviePosterContext = recyclerView.getContext();
+        MoviePoster currentMovie = moviePosters.get(clickedPosition);
+
+        Intent detailActivityIntent = new Intent(this, DetailActivity.class);
+        detailActivityIntent.putExtra("currentMovie", (currentMovie)); //Optional parameters
+
+        moviePosterContext.startActivity(detailActivityIntent);
+    }
 
     // 7 - Setup the main menu
 
@@ -312,7 +335,12 @@ public class MainActivity extends AppCompatActivity
             if (moviePosters != null && !moviePosters.isEmpty()) {//call a public method from here
 
                 Log.d("LoadFinished", "going to update movies");
-                moviePosterAdapter.updateMovies(moviePosters);
+                moviePosterAdapter.updateMovies((ArrayList<MoviePoster>) moviePosters);
+
+                // now, set the adapter for the recyclerview
+                moviePosterRecyclerView.setAdapter(moviePosterAdapter);
+                moviePosterAdapter.setMoviePosterClickListener(this);
+
             } else {
                 Log.e("LoadFinished", "have no posters?!");
                 errorMessage.setVisibility(View.VISIBLE);
@@ -393,21 +421,6 @@ public class MainActivity extends AppCompatActivity
             outState.putInt(CURRENT_POSITION, moviePosition);
         }
         super.onSaveInstanceState(outState);
-    }
-
-
-    // 7 - Specify the onItemClick Listener
-    @Override
-    public void onItemClick(View recyclerView, int clickedPosition) {
-
-
-        Context moviePosterContext = recyclerView.getContext();
-        MoviePoster currentMovie = moviePosters.get(clickedPosition);
-
-        Intent detailActivityIntent = new Intent(moviePosterContext, DetailActivity.class);
-        detailActivityIntent.putExtra("currentMovie", (currentMovie)); //Optional parameters
-
-        moviePosterContext.startActivity(detailActivityIntent);
     }
 
 

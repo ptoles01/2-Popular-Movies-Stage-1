@@ -7,8 +7,15 @@ import android.view.View;
 // To Implement Recyclerview onItemClickListener, an interface should be created
 // which specifies listener’s behaviour, similar to normal click listener except
 // the fact  that it also has the position as parameter
-public interface CustomMoviePosterClickListener {
+public interface ItemClickListener {
         void onItemClick(View view, int clickedPosition);
 
 }
+/*
+public interface CustomMoviePosterClickListener {
+        public void onItemClick(View view, int clickedPosition);
 
+}
+
+*/
+ 

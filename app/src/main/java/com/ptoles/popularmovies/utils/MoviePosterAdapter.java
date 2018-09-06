@@ -50,31 +50,24 @@ public class MoviePosterAdapter extends
     //https://stackoverflow.com/questions/40683817/how-to-set-two-adapters-to-one-recyclerview
     private static final int ITEM_TYPE_MOVIE_POSTER = 0;
     private static final int ITEM_TYPE_UNKNOWN = -1;
+
+    public static ArrayList<MoviePoster> moviePosters;
+    private int rowLayout;
     private Context moviePosterContext;
+    private ItemClickListener moviePosterClickListener;
 
-    private List<MoviePoster> moviePosters;
-    private CustomMoviePosterClickListener moviePosterListener;
-
-/*    public interface ListItemClickListener {
-        public void onItemClick(View view, int clickedPosition);
-
-        void onListItemClick(int clickedPosition);
-    }*/
-
-    public MoviePosterAdapter(Context context, List<MoviePoster> newMoviePosters, CustomMoviePosterClickListener onCustomMoviePosterClickListener) {
+    public MoviePosterAdapter(Context context, ArrayList<MoviePoster> newMoviePosters, int rowLayout) {
 
         this.moviePosterContext = context;
-        this.moviePosters = newMoviePosters;
-        this.moviePosterListener = onCustomMoviePosterClickListener;
+        moviePosters = newMoviePosters;
+        this.rowLayout = rowLayout;// R.layout.grid_item
+        //this.moviePosterClickListener = listener;
     }
-    public void setOnRecyclerViewItemClickListener(CustomMoviePosterClickListener onCustomMoviePosterClickListener) {
-        this.moviePosterListener = onCustomMoviePosterClickListener;
-    }
-    public void updateMovies(List<MoviePoster> newMoviePosters) {
-        this.moviePosters = newMoviePosters;
-        notifyDataSetChanged();
 
-    }
+    public void  updateMovies(ArrayList<MoviePoster> newMoviePosters ) {
+        moviePosters= newMoviePosters;
+        notifyDataSetChanged();
+   }
 
 
     @NonNull
@@ -82,33 +75,27 @@ public class MoviePosterAdapter extends
     public MoviePosterViewHolder onCreateViewHolder(@NonNull ViewGroup parent, final int viewType) {
         // onCreateViewHolder() :  only creates a new viewholder when there are no existing
         // view holders which the RecyclerView can reuse.
-
-        final View view = LayoutInflater.from(moviePosterContext)
+// https://stackoverflow.com/questions/28904479/best-place-to-attach-onclicklistener-in-recyclerview
+        View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.grid_item, parent, false);
-        final RecyclerView.ViewHolder viewHolder = new MoviePosterViewHolder(view);
-
-        final int position = viewHolder.getAdapterPosition();
-        view.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick (View view) {
-                if (moviePosterListener != null){
-
-                    if(position != RecyclerView.NO_POSITION){
-                        moviePosterListener.onItemClick(view, position);
-                    }
-                }
-            }
-        });
-        return (MoviePosterViewHolder) viewHolder;
+        RecyclerView.ViewHolder viewHolder = new MoviePosterViewHolder(view);
+         return (MoviePosterViewHolder) viewHolder;
     }
     @Override
     public int getItemCount() {
         // getItemCount() returns the number of items in the list.
         return moviePosters != null ? moviePosters.size() : 0;    }
 
+    public void setMoviePosterClickListener(ItemClickListener moviePosterClickListener) {
+        this.moviePosterClickListener = moviePosterClickListener;
+    }
+
+
     @Override
     public void onBindViewHolder(@NonNull MoviePosterViewHolder holder, int position) {
         // onBindViewHolder() is Called by RecyclerView to display the data at the specified position
+        // onBindViewHolder is called every time you bind your view with data. So here is not the
+        // best place to set click listener
 
         final MoviePoster currentMoviePoster = moviePosters.get(position);
         ImageView moviePosterImageView= holder.imageView;
@@ -135,43 +122,34 @@ public class MoviePosterAdapter extends
 
     }
 
-
-
     public class MoviePosterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        View view = itemView;
+        //View view = itemView;
         /*TextView titleView = view.findViewById(R.id.original_title_tv);//(TextView)
         TextView releaseDateView = view.findViewById(R.id.release_date_tv);//(TextView)
         TextView ratingView = view.findViewById(R.id.vote_average_tv);//(TextView)
         TextView synopsisView = view.findViewById(R.id.overview_tv); //(TextView)*/
-        private ImageView imageView;
+        public ImageView imageView;
 
         public MoviePosterViewHolder(View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.poster_image_view); //(ImageView)
-            imageView.setOnClickListener(this);
+            itemView.setTag(itemView);//???
+            itemView.setOnClickListener(this);
+
         }
 
         @Override
         public void onClick(View view) {
+            if (moviePosterClickListener != null) {
+                if(getAdapterPosition()!=RecyclerView.NO_POSITION){
 
-            int clickedPosition = getAdapterPosition();
+                    moviePosterClickListener.onItemClick(view, getAdapterPosition());
 
-            moviePosterListener.onItemClick(view, clickedPosition);
-
-            MoviePoster currentMovie = moviePosters.get(clickedPosition);
-            moviePosterContext = view.getContext();
-
-            if (moviePosterListener != null) {
-                Intent detailActivityIntent = new Intent(moviePosterContext, DetailActivity.class);
-                detailActivityIntent.putExtra("currentMovie", /*gson.toJson*/(currentMovie)); //Optional parameters
-
-                moviePosterContext.startActivity(detailActivityIntent);
-
+                }
             }
         }
     }
-
 
 
     @Override
