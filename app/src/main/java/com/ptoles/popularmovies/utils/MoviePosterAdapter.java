@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v7.widget.RecyclerView;
 
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -54,7 +55,13 @@ public class MoviePosterAdapter extends
     public static ArrayList<MoviePoster> moviePosters;
     private int rowLayout;
     private Context moviePosterContext;
-    private ItemClickListener moviePosterClickListener;
+    private OnItemClickListener moviePosterClickListener;
+
+    // Define the method that allows the parent activity or fragment to define the listener
+    public void setOnItemClickListener(OnItemClickListener moviePosterClickListener) {
+        this.moviePosterClickListener = moviePosterClickListener;
+    }
+
 
     public MoviePosterAdapter(Context context, ArrayList<MoviePoster> newMoviePosters, int rowLayout) {
 
@@ -85,10 +92,6 @@ public class MoviePosterAdapter extends
     public int getItemCount() {
         // getItemCount() returns the number of items in the list.
         return moviePosters != null ? moviePosters.size() : 0;    }
-
-    public void setMoviePosterClickListener(ItemClickListener moviePosterClickListener) {
-        this.moviePosterClickListener = moviePosterClickListener;
-    }
 
 
     @Override
@@ -144,7 +147,7 @@ public class MoviePosterAdapter extends
             if (moviePosterClickListener != null) {
                 if(getAdapterPosition()!=RecyclerView.NO_POSITION){
 
-                    moviePosterClickListener.onItemClick(view, getAdapterPosition());
+                    moviePosterClickListener.onItemClick(view, getAdapterPosition(),moviePosters);
 
                 }
             }
