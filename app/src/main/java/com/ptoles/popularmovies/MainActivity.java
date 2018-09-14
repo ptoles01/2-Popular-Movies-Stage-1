@@ -69,7 +69,6 @@ import com.ptoles.popularmovies.utils.MovieSortPreferences;
 import com.ptoles.popularmovies.utils.OnItemClickListener;
 
 import static com.ptoles.popularmovies.utils.JsonParser.*;
-import static com.ptoles.popularmovies.utils.MoviePosterAdapter.*;
 
 public class MainActivity extends AppCompatActivity
                             implements  LoaderManager.LoaderCallbacks<List<MoviePoster>>,
@@ -82,8 +81,9 @@ public class MainActivity extends AppCompatActivity
 
     private TextView errorMessage;
 
-    private final String KEY_RECYCLER_STATE = "ListState";
+    private final String KEY_RECYCLER_VIEW_STATE = "recyclerViewState";
     private final String KEY_SAVED_RECYCLER_VIEW_DATASET = "MoviePosters";
+    private static final String KEY_LAYOUT_MANAGER_STATE = "layoutManagerState";
 
     private RecyclerView moviePosterRecyclerView;
     private static Bundle bundleRecyclerViewState;
@@ -166,13 +166,13 @@ public class MainActivity extends AppCompatActivity
 
 
         if (savedInstanceState != null && savedInstanceState.containsKey(CURRENT_POSITION)) {
-            Parcelable savedRecyclerLayoutState = savedInstanceState.getParcelable(KEY_RECYCLER_STATE);
+            Parcelable savedRecyclerLayoutState = savedInstanceState.getParcelable(KEY_RECYCLER_VIEW_STATE);
 
             // Store the position(moviePosition) in the bundle
             // Store the state of the mainActivity as well
             moviePosition = savedInstanceState.getInt(CURRENT_POSITION);
             moviePosters = savedInstanceState.getParcelableArrayList(KEY_SAVED_RECYCLER_VIEW_DATASET);
-            moviePosterLayoutManager.onRestoreInstanceState(savedRecyclerLayoutState);
+            onRestoreInstanceState(savedRecyclerLayoutState);
 
         }else{
             int numberOfColumns = getResources().getInteger(R.integer.num_columns);//2 or 4;
@@ -240,13 +240,23 @@ public class MainActivity extends AppCompatActivity
                     Log.i(TAG, "voteAverage: " +currentMovie.getVoteAverage());
                     Log.i(TAG, "releaseDate: " +currentMovie.getReleaseDate());
 
+                    String voteAverageString = String.valueOf(new StringBuilder().append(currentMovie.getVoteAverage()).append("/10"));
+                    String backdropPathString = currentMovie.getBackdropPath();
+                    String originalTitleString = currentMovie.getOriginalTitle();
+                    String releaseDateString = currentMovie.getReleaseDate();
+                    String ratingString = currentMovie.getVoteAverage();
+                    String synopsisOverviewString = currentMovie.getOverview();
+
+                    Log.i(TAG, "voteAverage: " + voteAverageString);
+                    Log.i(TAG, "releaseDate: " + releaseDateString);
+
                     //Optional parameters
-                    detailActivityIntent.putExtra("backdropPath", currentMovie.getBackdropPath());
-                    detailActivityIntent.putExtra("originalTitle", currentMovie.getOriginalTitle());
-                    detailActivityIntent.putExtra("releaseDate", currentMovie.getReleaseDate());
-                    detailActivityIntent.putExtra("voteAverage", currentMovie.getVoteAverage().toString() + "/10");
-                    detailActivityIntent.putExtra("rating", currentMovie.getVoteAverage());
-                    detailActivityIntent.putExtra("synopsisOverview", currentMovie.getOverview());
+                    detailActivityIntent.putExtra("backdropPath",backdropPathString );
+                    detailActivityIntent.putExtra("originalTitle",originalTitleString );
+                    detailActivityIntent.putExtra("releaseDate",releaseDateString );
+                    detailActivityIntent.putExtra("voteAverage", voteAverageString);
+                    detailActivityIntent.putExtra("rating", ratingString);
+                    detailActivityIntent.putExtra("synopsisOverview",synopsisOverviewString );
 
                     moviePosterContext.startActivity(detailActivityIntent);
 
@@ -447,25 +457,28 @@ public class MainActivity extends AppCompatActivity
     protected void onPause()
     {
         super.onPause();
-
+/*
         // save RecyclerView state
         bundleRecyclerViewState = new Bundle();
         Parcelable recyclerViewState = moviePosterRecyclerView.getLayoutManager().onSaveInstanceState();
-        bundleRecyclerViewState.putParcelable(KEY_RECYCLER_STATE, recyclerViewState);
+        bundleRecyclerViewState.putParcelable(KEY_RECYCLER_VIEW_STATE, recyclerViewState);
+        */
     }
 
     @Override //https://www.youtube.com/watch?v=tWtaDNJs48o
     // http://qaru.site/questions/144487/recyclerview-store-restore-state-between-activities
     protected void onResume(){
         super.onResume();
-
+/*
         // restore RecyclerView state
         if (bundleRecyclerViewState != null) {
-            Parcelable recyclerViewState = bundleRecyclerViewState.getParcelable(KEY_RECYCLER_STATE);
+            Parcelable recyclerViewState = bundleRecyclerViewState.getParcelable(KEY_RECYCLER_VIEW_STATE);
             //moviePosterRecyclerView.getLayoutManager().onRestoreInstanceState(recyclerViewState);
-            moviePosterLayoutManager.onRestoreInstanceState(recyclerViewState);// restore the state
+            this.onRestoreInstanceState(recyclerViewState);// restore the state
 
         }
+        */
+
     }
 
 
@@ -479,58 +492,70 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+
     @Override //https://www.youtube.com/watch?v=tWtaDNJs48o
-    // http://qaru.site/questions/144487/recyclerview-store-restore-state-between-activities
-    protected void onSaveInstanceState(Bundle outstate) {
+    // Save the current recyclersview state before restoring a previous one,
+    // using the layoutmanager to do it.
+    // https://panavtec.me/retain-restore-recycler-view-scroll-position    // http://qaru.site/questions/144487/recyclerview-store-restore-state-between-activities
+    protected void onSaveInstanceState( Bundle outState) {
         // When the device is rotated, save the currently selected movie position
         // If no movie is selected, the position will be RecyclerView.NO_POSITION
-        if (moviePosition != RecyclerView.NO_POSITION) {
-            outstate.putInt(CURRENT_POSITION, moviePosition);
+        super.onSaveInstanceState(outState);
 
-            Parcelable recyclerState = moviePosterRecyclerView.getLayoutManager().onSaveInstanceState();
+
+        if (moviePosition != RecyclerView.NO_POSITION) {
+            outState.putInt(CURRENT_POSITION, moviePosition);
+
+            Parcelable layoutManagerState = moviePosterRecyclerView.getLayoutManager().onSaveInstanceState();
+            Parcelable recyclerState =  outState;
+         //   Parcelable moviePosterRecyclerViewAdapter = (Parcelable) moviePosterRecyclerView.getAdapter();
             // obtaining recyclerview's position
 
-            outstate.putParcelable(KEY_RECYCLER_STATE, recyclerState);
+            outState.putParcelable(KEY_LAYOUT_MANAGER_STATE, layoutManagerState);
             // putting recyclerview position
 
-            outstate.putParcelableArrayList(KEY_SAVED_RECYCLER_VIEW_DATASET, new ArrayList<MoviePoster>(moviePosters));
+            outState.putParcelable(KEY_RECYCLER_VIEW_STATE, recyclerState);
+
+            //outState.putParcelableArrayList(KEY_SAVED_RECYCLER_VIEW_DATASET, new ArrayList<MoviePoster>(moviePosters));
             //putting recyclerview items
 
-            super.onSaveInstanceState(outstate);
+
         }
     } // end - onSavedInstanceState
 
 
+
+    //https://gist.github.com/FrantisekGazo/a9cc4e18cee42199a287
     //https://www.youtube.com/watch?v=tWtaDNJs48o
     // http://qaru.site/questions/144487/recyclerview-store-restore-state-between-activities
-    public void restorePreviousState(@Nullable final Bundle savedInstanceState) {
+    public void onRestoreInstanceState(@Nullable  Parcelable state) {
 
+        if ((state instanceof Bundle) &  (state != null)){
+            Bundle bundle = (Bundle) state; // convert this parcelable into a bundle instead
+            Parcelable layoutManagerSavedState = bundle.getParcelable(KEY_LAYOUT_MANAGER_STATE);
+            Bundle recyclerViewState = bundle.getParcelable(KEY_RECYCLER_VIEW_STATE);
 
-        Parcelable savedRecyclerLayoutState = savedInstanceState.getParcelable(KEY_RECYCLER_STATE);
+            // https://panavtec.me/retain-restore-recycler-view-scroll-position
+            // restore the state of the layout manager
+            if ((moviePosterLayoutManager != null) && (layoutManagerSavedState != null)) {
+                moviePosterLayoutManager.onRestoreInstanceState(layoutManagerSavedState);
+                layoutManagerSavedState = null;
+            }
 
-        // When the device is rotated, retrieve the selected movie position
-        // If no movie is selected, the position will be RecyclerView.NO_POSITION
-        if (savedRecyclerLayoutState != null) {
-            moviePosters = savedInstanceState.getParcelableArrayList(KEY_SAVED_RECYCLER_VIEW_DATASET);
-            moviePosterLayoutManager.onRestoreInstanceState(savedRecyclerLayoutState);
-            moviePosition = savedInstanceState.getInt(CURRENT_POSITION);
-//            moviePosterAdapter.updateMovies((ArrayList<MoviePoster>) moviePosters);
+            //Populate the adapter with data
+            moviePosterAdapter.updateMovies(moviePosters);
 
-            // now, set the adapter for the recyclerview
- //           moviePosterRecyclerView.setAdapter(moviePosterAdapter);
-        }
-   /*
-        else{
+            // restore the position of the recyclerview
+            if ((moviePosterRecyclerView != null) && (recyclerViewState != null)) {
 
-            moviePosters = new ArrayList<MoviePoster>();
-        }
+                moviePosterRecyclerView.getLayoutManager().onRestoreInstanceState(recyclerViewState);
+                recyclerViewState = null;
+            }
+        } // end - if ((state instanceof Bundle) &  (state != null)){
 
-      //  moviePosterAdapter = new MoviePosterAdapter(getApplicationContext(), moviePosters, R.layout.grid_item);
-  */
-        super.onRestoreInstanceState(savedInstanceState);
+        super.onRestoreInstanceState( (Bundle) state);
 
-    }// end - restorePreviousState()
-
+    }// end - onRestoreInstanceState()
 
 
 } // end of the class MainActivity.java

@@ -73,7 +73,7 @@ public class MoviePosterAdapter extends
 
     public void  updateMovies(ArrayList<MoviePoster> newMoviePosters ) {
         moviePosters= newMoviePosters;
-        notifyDataSetChanged();
+      //  notifyDataSetChanged();
    }
 
 
