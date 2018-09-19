@@ -1,3 +1,4 @@
+
 package com.ptoles.popularmovies;
 
 /*
@@ -7,23 +8,36 @@ https://stackoverflow.com/questions/26811212/
 
 /*
 Features: AsyncTask Loader
-          Parcelable
+          Constraint and Relative Layouts
+          Scrollbars
+          Parcelable Data
+          Portrait and Landscape Orientation of Main and Detail Activities
+          Custom Grid Layout Recyclerview which "remembers" your previous scroll position
+          JSON Data Manipulation
+          Downloading from URLs
+          Shared Preferences
+          Sort Menu
+          Custom "Star" Rating Display
 
 https://www.youtube.com/watch?v=yP8KKpKEXYc
 Gil @28:32 discusses MainActivityInterface
-
 interface MainActivityInterface{
-
     String getSortBy();
     MovieAdapter getMoviePosterAdapter();
     TextView getErrorMessage();
     ProgressBar getProgressBar(); // i.e. getLoadingIndicator();
     RecyclerView getMoviePosterRecyclerView();
     void launchDetailActivity(MoviePoster moviePoster);
-
-
 }
-
+Soon to come:
+Cardview Layout
+Carousel Layout
+Alternating Layouts
+Tabbed Layouts
+Master Detail Layouts
+Navigation Drawer Layouts
+Floating Menu Layouts
+Build Variants
 
 */
 
@@ -61,6 +75,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.ptoles.popularmovies.model.MoviePoster;
+import com.ptoles.popularmovies.utils.CONSTANTS;
 import com.ptoles.popularmovies.utils.JsonParser;
 import com.ptoles.popularmovies.utils.MoviePosterAdapter;
 import com.ptoles.popularmovies.utils.MoviePosterLoader;
@@ -71,22 +86,25 @@ import com.ptoles.popularmovies.utils.OnItemClickListener;
 import static com.ptoles.popularmovies.utils.JsonParser.*;
 
 public class MainActivity extends AppCompatActivity
-                            implements  LoaderManager.LoaderCallbacks<List<MoviePoster>>,
-                                        SharedPreferences.OnSharedPreferenceChangeListener {
+        implements  LoaderManager.LoaderCallbacks<List<MoviePoster>>,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
+
+     private static final String TAG = MainActivity.class.getSimpleName();
+    private static int COUNT_ORDER = 1;
 
     private static final int MOVIE_LOADER_ID = 0;
-    private static final String CURRENT_POSITION = "position";
+    public static final String CURRENT_POSITION = "position";
 
     private TextView errorMessage;
 
-    private final String KEY_RECYCLER_VIEW_STATE = "recyclerViewState";
-    private final String KEY_SAVED_RECYCLER_VIEW_DATASET = "MoviePosters";
-    private static final String KEY_LAYOUT_MANAGER_STATE = "layoutManagerState";
+    private Parcelable layoutManagerState;
+    private Parcelable listState;
 
     private RecyclerView moviePosterRecyclerView;
     private static Bundle bundleRecyclerViewState;
+    private static String KEY_SAVED_SUPER_STATE = "savedSuperState";
+    private static String KEY_SAVED_RECYCLER_VIEW_DATASET = "MoviePosters";
 
     private MoviePosterAdapter moviePosterAdapter;
     private ArrayList<MoviePoster> moviePosters = new ArrayList<>();
@@ -95,6 +113,7 @@ public class MainActivity extends AppCompatActivity
     public ArrayList<MoviePoster> getMoviePosters() {
         return moviePosters;
     }
+
     public void setMoviePosters(ArrayList<MoviePoster> moviePosters) {
         this.moviePosters = moviePosters;
     }
@@ -103,8 +122,6 @@ public class MainActivity extends AppCompatActivity
     OnItemClickListener moviePosterClickListener;
     private String orderBy;
 
-    private ImageView moviePosterImageView;
-    private int moviePosition;
 
     private ProgressBar progressBar;
 
@@ -122,25 +139,29 @@ public class MainActivity extends AppCompatActivity
 
     // URL to query the movie database
     private static final String MOVIE_MOST_POPULAR_URL =
-            "https://api.themoviedb.org/3/movie/popular?&api_key="+apiKey;
+            "https://api.themoviedb.org/3/movie/popular?&api_key=" + apiKey;
 
     private static final String MOVIE_TOP_RATED_URL =
-            "https://api.themoviedb.org/3/movie/top_rated?&api_key="+apiKey;
+            "https://api.themoviedb.org/3/movie/top_rated?&api_key=" + apiKey;
 
-
-    public ImageView getMoviePosterImageView() {
-        return moviePosterImageView;
-    }
 
     private boolean isInternetAvailable() {
         return NetworkUtils.getInstance(this).isNetworkAvailable();
     }
 
     public String apiKey() {
-        return JsonParser.COMPLETE_URL+apiKey;
+        return JsonParser.COMPLETE_URL + apiKey;
     }
 
 
+    public ImageView getMoviePosterImageView() {
+        return moviePosterImageView;
+    }
+
+    private ImageView moviePosterImageView;
+    //TODO: Define moviePosition as static so as to retain its value
+    //      when we return
+    private static int moviePosition=0;
 
 
     // 1 - Define my data source
@@ -164,34 +185,47 @@ public class MainActivity extends AppCompatActivity
         //https://www.youtube.com/watch?v=WBbsvqSu0is - sending parcelable bundle between activities
         super.onCreate(savedInstanceState);
 
-
-        if (savedInstanceState != null && savedInstanceState.containsKey(CURRENT_POSITION)) {
-            Parcelable savedRecyclerLayoutState = savedInstanceState.getParcelable(KEY_RECYCLER_VIEW_STATE);
-
-            // Store the position(moviePosition) in the bundle
-            // Store the state of the mainActivity as well
-            moviePosition = savedInstanceState.getInt(CURRENT_POSITION);
-            moviePosters = savedInstanceState.getParcelableArrayList(KEY_SAVED_RECYCLER_VIEW_DATASET);
-            onRestoreInstanceState(savedRecyclerLayoutState);
-
-        }else{
-            int numberOfColumns = getResources().getInteger(R.integer.num_columns);//2 or 4;
-
-            // https://stackoverflow.com/questions/36568168/how-to-save-scroll-position-of-recyclerview-in-android
-            //Create Layout manager to set the recyclerview to grid
-            moviePosterLayoutManager = new GridLayoutManager(this, numberOfColumns);
-        }
-
-
-       // if (moviePosition != RecyclerView.NO_POSITION) {
-         //   moviePosterRecyclerView.scrollToPosition(moviePosition);
-      //  }
-        createNewState();
+            createMainActivity();
+                // retrieve all widgets on MainActivity that need initializing
+            displayMainActivity();
+                // initialize widgets from MainActivity with appropriate data
+      //  this.onRestoreInstanceState(savedInstanceState);
     }// end - onCreate(Bundle savedInstanceState)
 
     //https://www.learnhowtoprogram.com/android/web-service-backends-and-custom-fragments/custom-adapters-with-recyclerview
+    private void createMainActivity() {
+        // ties variables to their corresponding widgets where appropriate
 
-    public void createNewState() {
+        setContentView(R.layout.activity_main);
+            // display MainActivity
+
+        moviePosterRecyclerView = findViewById(R.id.movie_poster_grid);
+            // use RecyclerView as our layout
+        moviePosterRecyclerView.setVisibility(View.VISIBLE);
+            // make the RecyclerView widget visible
+        moviePosterRecyclerView.setHasFixedSize(true);
+            // limit its size
+        int numberOfColumns = getResources().getInteger(R.integer.num_columns);
+            //2 or 4 columns depending on orientation
+
+        // https://stackoverflow.com/questions/36568168/how-to-save-scroll-position-of-recyclerview-in-android
+        //Create Layout manager to set the recyclerview to grid
+
+        // Initialize the layout manager
+        moviePosterLayoutManager = (moviePosterRecyclerView.getLayoutManager() == null) ?
+        new GridLayoutManager(this, numberOfColumns) :  moviePosterRecyclerView.getLayoutManager();
+                // create a new layoutManager                       // reuse the existing layoutManager
+
+
+        // Initialize the adapter for the layout manager
+        // create the adapter for the recyclerview (i.e. moviePosterRecyclerView )
+        moviePosterAdapter = (moviePosterAdapter == null) ?
+        new MoviePosterAdapter(this, moviePosters, R.layout.grid_item)  :  (MoviePosterAdapter) moviePosterRecyclerView.getAdapter();
+                    // create a new adapter                                           // reuse the existing adapter
+
+    }// end - createMainActivity()
+
+    public void displayMainActivity( ) {
 
         // Check for network connectivity before attempting to download  poster data
 
@@ -204,23 +238,6 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this, "You are not online!!!!", Toast.LENGTH_LONG).show();
 
         } else { // internet is available so proceed
-            setContentView(R.layout.activity_main);// this opens up MainActivity
-
-
-            // 1 - Define my data source
-            // moviePosters = new ArrayList<MoviePoster>();
-
-            // 3 - Obtain a reference to my RecyclerView
-
-            moviePosterRecyclerView = findViewById(R.id.movie_poster_grid);
-            moviePosterRecyclerView.setVisibility(View.VISIBLE);//
-            moviePosterRecyclerView.setHasFixedSize(true);
-
-            moviePosterRecyclerView.setLayoutManager(moviePosterLayoutManager);
-            // create the adapter for the recyclerview (i.e. moviePosterRecyclerView )
-            moviePosterAdapter = new MoviePosterAdapter(this, moviePosters, R.layout.grid_item);
-
-
 
             moviePosterAdapter.setOnItemClickListener(new OnItemClickListener() {
                 @Override
@@ -228,88 +245,97 @@ public class MainActivity extends AppCompatActivity
 
 
                     moviePosition = clickedPosition; // the value of moviePosition will be saved in
-                                                     // the bundle, so establish this equality now
-                                                     // for when that happens later
+                    // the bundle, so establish this equality now
+                    // for when that happens later
 
-                    Log.i(TAG, "moviePosters.size: " + moviePosters.size());
                     Context moviePosterContext = recyclerView.getContext();
 
                     MoviePoster currentMovie = moviePosters.get(moviePosition);
 
                     Intent detailActivityIntent = new Intent(moviePosterContext, DetailActivity.class);
-                    Log.i(TAG, "voteAverage: " +currentMovie.getVoteAverage());
-                    Log.i(TAG, "releaseDate: " +currentMovie.getReleaseDate());
+                    
 
                     String voteAverageString = String.valueOf(new StringBuilder().append(currentMovie.getVoteAverage()).append("/10"));
-                    String backdropPathString = currentMovie.getBackdropPath();
-                    String originalTitleString = currentMovie.getOriginalTitle();
-                    String releaseDateString = currentMovie.getReleaseDate();
-                    String ratingString = currentMovie.getVoteAverage();
-                    String synopsisOverviewString = currentMovie.getOverview();
 
-                    Log.i(TAG, "voteAverage: " + voteAverageString);
-                    Log.i(TAG, "releaseDate: " + releaseDateString);
+                    detailActivityIntent.putExtra("moviePosition",moviePosition );
 
-                    //Optional parameters
-                    detailActivityIntent.putExtra("backdropPath",backdropPathString );
-                    detailActivityIntent.putExtra("originalTitle",originalTitleString );
-                    detailActivityIntent.putExtra("releaseDate",releaseDateString );
+                    detailActivityIntent.putExtra("backdropPath",currentMovie.getBackdropPath() );
+                    detailActivityIntent.putExtra("originalTitle",currentMovie.getOriginalTitle() );
+                    detailActivityIntent.putExtra("releaseDate", currentMovie.getReleaseDate() );
                     detailActivityIntent.putExtra("voteAverage", voteAverageString);
-                    detailActivityIntent.putExtra("rating", ratingString);
-                    detailActivityIntent.putExtra("synopsisOverview",synopsisOverviewString );
+                    detailActivityIntent.putExtra("rating", currentMovie.getVoteAverage());
+                    detailActivityIntent.putExtra("synopsisOverview",currentMovie.getOverview() );
 
                     moviePosterContext.startActivity(detailActivityIntent);
 
                 }
             });
-            moviePosterRecyclerView.setAdapter(moviePosterAdapter);
-        }// end - createNewState
 
-            // 4 - Obtain a reference to my progress bar
-            progressBar = findViewById(R.id.progressBar);
+        }// end - displayMainActivity
+// TODO: 1- Make both align
 
+        if (layoutManagerState != null) {
+            //moviePosterAdapter
+//            moviePosterRecyclerView.setAdapter(moviePosterAdapter);
+            moviePosterRecyclerView.getLayoutManager().onRestoreInstanceState(layoutManagerState);
+            moviePosterRecyclerView.setLayoutManager(moviePosterRecyclerView.getLayoutManager());
+            
+        } else {
+            moviePosterRecyclerView.setLayoutManager(moviePosterLayoutManager);
+            moviePosterRecyclerView.scrollToPosition(moviePosition);
+        }
 
-            // 5 - Setup shared preferences re: sort order
-            //     Register MainActivity as an OnPreferenceChangedListener to receive a callback when a
-            //     SharedPreference has changed. Please note that we must unregister MainActivity as an
-            //     OnSharedPreferenceChanged listener in onDestroy to avoid any memory leaks.
-            //     the manager is  the place/resource/database to store the preferences
-            sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-            // Set the orderBy key to be whatever is already indicated in the class
-            orderBy = sharedPreferences.getString(
-                    getString(R.string.settings_order_by_key),
-                    getString(R.string.settings_order_by_default));
-
-            // now register your listener for changes
-            sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-            sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-
-            //sharedPreferencesEditor = sharedPreferences.edit();
-            // preferences you intend to store
-
-            //checkSharedPreferences(sharedPreferencesEditor);
-
-            // 6 - Get a reference to the loader manager
-            // Get a reference to the LoaderManager, in order to interact with loaders.
-            LoaderManager loaderManager = getLoaderManager();
-            //  Toast.makeText(this,"You are online!!!!",Toast.LENGTH_LONG).show();
-            //https://stackoverflow.com/questions/41267446/how-to-get-loadermanager-initloader-working-within-a-fragment
-            //implementation 'com.android.support.v4.app.LoaderManager.LoaderCallbacks'
-            //    implementation 'com.android.support.v4.app.LoaderManager.LoaderCallbacks'
-            loaderManager.initLoader(MOVIE_LOADER_ID, null, this);//.forceload();
-            // errorMessage.setVisibility(View.GONE); // Hide the error message
-
-            // Otherwise, hide the progress bar then display an error message
-            // Hide the progress bar before
-            progressBar.setVisibility(View.GONE);
+        //Bundle bundle = (Bundle) outState;
+       // bundle.putParcelable(CONSTANTS.KEY_LIST_STATE, listState);
+       // bundle.putParcelable(CONSTANTS.KEY_LAYOUT_MANAGER_STATE, moviePosterRecyclerView.getLayoutManager().onSaveInstanceState());
+       // bundle.putParcelable(CONSTANTS.KEY_SUPER_STATE,bundle);
 
 
-        }// end - internet is available
 
-    //  }end - createNewState
+        // 4 - Obtain a reference to my progress bar
+        progressBar = findViewById(R.id.progressBar);
+
+
+        // 5 - Setup shared preferences re: sort order
+        //     Register MainActivity as an OnPreferenceChangedListener to receive a callback when a
+        //     SharedPreference has changed. Please note that we must unregister MainActivity as an
+        //     OnSharedPreferenceChanged listener in onDestroy to avoid any memory leaks.
+        //     the manager is  the place/resource/database to store the preferences
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        // Set the orderBy key to be whatever is already indicated in the class
+        orderBy = sharedPreferences.getString(
+                getString(R.string.settings_order_by_key),
+                getString(R.string.settings_order_by_default));
+
+        // now register your listener for changes
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
+        //sharedPreferencesEditor = sharedPreferences.edit();
+        // preferences you intend to store
+
+        //checkSharedPreferences(sharedPreferencesEditor);
+
+        // 6 - Get a reference to the loader manager
+        // Get a reference to the LoaderManager, in order to interact with loaders.
+        LoaderManager loaderManager = getLoaderManager();
+        //  Toast.makeText(this,"You are online!!!!",Toast.LENGTH_LONG).show();
+        //https://stackoverflow.com/questions/41267446/how-to-get-loadermanager-initloader-working-within-a-fragment
+        //implementation 'com.android.support.v4.app.LoaderManager.LoaderCallbacks'
+        //    implementation 'com.android.support.v4.app.LoaderManager.LoaderCallbacks'
+        loaderManager.initLoader(MOVIE_LOADER_ID, null, this);//.forceload();
+        // errorMessage.setVisibility(View.GONE); // Hide the error message
+
+        // Otherwise, hide the progress bar then display an error message
+        // Hide the progress bar before
+        progressBar.setVisibility(View.GONE);
+
+
+    }// end - internet is available
+
 
     // 7 - Setup the main menu
 
@@ -356,7 +382,7 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "LoadInBackground: use URL for most popular");
                 moviePosterUri = Uri.parse(JsonParser.mostPopularUrl);
                 moviePosterString = JsonParser.mostPopularUrl;
-            break;
+                break;
 
             case "popular":
                 Log.d(TAG, "LoadInBackground: use URL for highest rated");
@@ -373,40 +399,35 @@ public class MainActivity extends AppCompatActivity
 
     public void onLoadFinished(Loader<List<MoviePoster>> loader, List<MoviePoster> moviePosters) {
 
-            progressBar.setVisibility(View.GONE);
+        progressBar.setVisibility(View.GONE);
 
-            if (moviePosters == null) {
-                Log.e("LoadFinished", "Load finished with no movie posters! bailing");
-                return;
-            }
-
-            Log.d("LoadFinished", "Got movie posters: " + moviePosters.size());
-
-            // Hide(i.e. setVisibility(View.GONE) ) the progressBar since the data has finished loading
-            if (moviePosters != null && !moviePosters.isEmpty()) {//call a public method from here
-
-                Log.d("LoadFinished", "going to update movies");
-                moviePosterAdapter.updateMovies((ArrayList<MoviePoster>) moviePosters);
-
-                // now, set the adapter for the recyclerview
-                moviePosterRecyclerView.setAdapter(moviePosterAdapter);
-
-            } else {
-                Log.e("LoadFinished", "have no posters?!");
-                errorMessage.setVisibility(View.VISIBLE);
-
-                // Set empty state text to display "No movies available!"
-                errorMessage.setText(R.string.no_movies_available);
-            }
-
-
-          //  moviePosterAdapter.notifyDataSetChanged();
+        if (moviePosters == null) {
+            Log.e("LoadFinished", "Load finished with no movie posters! bailing");
+            return;
         }
+
+        // Hide(i.e. setVisibility(View.GONE) ) the progressBar since the data has finished loading
+        if (moviePosters != null && !moviePosters.isEmpty()) {//call a public method from here
+
+            moviePosterAdapter.updateMovies((ArrayList<MoviePoster>) moviePosters);
+
+            // now, set the adapter for the recyclerview
+            moviePosterRecyclerView.setAdapter(moviePosterAdapter);
+
+        } else {
+            errorMessage.setVisibility(View.VISIBLE);
+
+            // Set empty state text to display "No movies available!"
+            errorMessage.setText(R.string.no_movies_available);
+        }
+
+
+    }
 
 
     @Override
     public void onLoaderReset(Loader<List<MoviePoster>> loader) {
-      //  moviePosterAdapter.notifyDataSetChanged();
+        //  moviePosterAdapter.notifyDataSetChanged();
 
     }
 
@@ -456,106 +477,83 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause()
     {
+        this.onSaveInstanceState( new Bundle() );
         super.onPause();
-/*
-        // save RecyclerView state
-        bundleRecyclerViewState = new Bundle();
-        Parcelable recyclerViewState = moviePosterRecyclerView.getLayoutManager().onSaveInstanceState();
-        bundleRecyclerViewState.putParcelable(KEY_RECYCLER_VIEW_STATE, recyclerViewState);
-        */
+
+
     }
 
-    @Override //https://www.youtube.com/watch?v=tWtaDNJs48o
+    @Override //https://www.youtRube.com/watch?v=tWtaDNJs48o
     // http://qaru.site/questions/144487/recyclerview-store-restore-state-between-activities
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
-/*
-        // restore RecyclerView state
-        if (bundleRecyclerViewState != null) {
-            Parcelable recyclerViewState = bundleRecyclerViewState.getParcelable(KEY_RECYCLER_VIEW_STATE);
-            //moviePosterRecyclerView.getLayoutManager().onRestoreInstanceState(recyclerViewState);
-            this.onRestoreInstanceState(recyclerViewState);// restore the state
 
+        if (listState != null) {
+            moviePosterLayoutManager.onRestoreInstanceState(listState);
         }
-        */
 
     }
-
-
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
+
         // Unregister MainActivity as an OnPreferenceChangedListener to avoid any memory leaks.
         PreferenceManager.getDefaultSharedPreferences(this).
                 unregisterOnSharedPreferenceChangeListener(this);
+        super.onDestroy();
     }
 
 
-
-    @Override //https://www.youtube.com/watch?v=tWtaDNJs48o
-    // Save the current recyclersview state before restoring a previous one,
-    // using the layoutmanager to do it.
-    // https://panavtec.me/retain-restore-recycler-view-scroll-position    // http://qaru.site/questions/144487/recyclerview-store-restore-state-between-activities
-    protected void onSaveInstanceState( Bundle outState) {
-        // When the device is rotated, save the currently selected movie position
-        // If no movie is selected, the position will be RecyclerView.NO_POSITION
+// TODO: 2 - Make both align
+    protected void onSaveInstanceState(Bundle outState) {
+       // listState = moviePosterRecyclerView.getLayoutManager().onSaveInstanceState();
         super.onSaveInstanceState(outState);
 
+        listState = moviePosterLayoutManager.onSaveInstanceState();
 
-        if (moviePosition != RecyclerView.NO_POSITION) {
-            outState.putInt(CURRENT_POSITION, moviePosition);
+        // Save currently selected layout manager.
 
-            Parcelable layoutManagerState = moviePosterRecyclerView.getLayoutManager().onSaveInstanceState();
-            Parcelable recyclerState =  outState;
-         //   Parcelable moviePosterRecyclerViewAdapter = (Parcelable) moviePosterRecyclerView.getAdapter();
-            // obtaining recyclerview's position
-
-            outState.putParcelable(KEY_LAYOUT_MANAGER_STATE, layoutManagerState);
-            // putting recyclerview position
-
-            outState.putParcelable(KEY_RECYCLER_VIEW_STATE, recyclerState);
-
-            //outState.putParcelableArrayList(KEY_SAVED_RECYCLER_VIEW_DATASET, new ArrayList<MoviePoster>(moviePosters));
-            //putting recyclerview items
+            outState.putParcelable(CONSTANTS.KEY_LIST_STATE, listState);
 
 
-        }
-    } // end - onSavedInstanceState
 
-
+    }
 
     //https://gist.github.com/FrantisekGazo/a9cc4e18cee42199a287
-    //https://www.youtube.com/watch?v=tWtaDNJs48o
-    // http://qaru.site/questions/144487/recyclerview-store-restore-state-between-activities
-    public void onRestoreInstanceState(@Nullable  Parcelable state) {
+    protected void onRestoreInstanceState(Parcelable savedInstanceState) {
 
-        if ((state instanceof Bundle) &  (state != null)){
-            Bundle bundle = (Bundle) state; // convert this parcelable into a bundle instead
-            Parcelable layoutManagerSavedState = bundle.getParcelable(KEY_LAYOUT_MANAGER_STATE);
-            Bundle recyclerViewState = bundle.getParcelable(KEY_RECYCLER_VIEW_STATE);
+        if(savedInstanceState != null) {
+            if (savedInstanceState instanceof Bundle) {
+                Bundle bundle = (Bundle)savedInstanceState;
 
-            // https://panavtec.me/retain-restore-recycler-view-scroll-position
-            // restore the state of the layout manager
-            if ((moviePosterLayoutManager != null) && (layoutManagerSavedState != null)) {
-                moviePosterLayoutManager.onRestoreInstanceState(layoutManagerSavedState);
-                layoutManagerSavedState = null;
+                layoutManagerState = bundle.getParcelable(CONSTANTS.KEY_LAYOUT_MANAGER_STATE);
+                 savedInstanceState= bundle.getParcelable(CONSTANTS.KEY_SAVED_INSTANCE_STATE);
+                //outState =  bundle.getParcelable(CONSTANTS.KEY_SUPER_STATE);
+
+                // If a layout manager has already been set, get current scroll position.
+                if (moviePosterRecyclerView.getLayoutManager() != null) {
+                    moviePosition = ((GridLayoutManager) moviePosterRecyclerView.getLayoutManager())
+
+                            .findFirstVisibleItemPosition();
+                            //.findFirstCompletelyVisibleItemPosition();
+                }
+
+
+                if (savedInstanceState != null) {
+                    moviePosterLayoutManager.onRestoreInstanceState(listState);
+
+                } else {
+                    moviePosterRecyclerView.setLayoutManager(moviePosterLayoutManager);
+                    moviePosterRecyclerView.scrollToPosition(moviePosition);
+                }
+
+                super.onRestoreInstanceState((Bundle) savedInstanceState);
+
             }
 
-            //Populate the adapter with data
-            moviePosterAdapter.updateMovies(moviePosters);
+        }
 
-            // restore the position of the recyclerview
-            if ((moviePosterRecyclerView != null) && (recyclerViewState != null)) {
-
-                moviePosterRecyclerView.getLayoutManager().onRestoreInstanceState(recyclerViewState);
-                recyclerViewState = null;
-            }
-        } // end - if ((state instanceof Bundle) &  (state != null)){
-
-        super.onRestoreInstanceState( (Bundle) state);
-
-    }// end - onRestoreInstanceState()
-
+    }
 
 } // end of the class MainActivity.java
+

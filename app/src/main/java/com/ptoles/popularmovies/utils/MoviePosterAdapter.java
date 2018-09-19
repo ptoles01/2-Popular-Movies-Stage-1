@@ -2,7 +2,6 @@ package com.ptoles.popularmovies.utils;
 
 
 import android.content.Context;
-import android.content.Intent;
 
 
 import android.support.annotation.NonNull;
@@ -11,10 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v7.widget.RecyclerView;
 
-import android.widget.AdapterView;
 import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 //import com.google.gson.Gson;
 
@@ -24,7 +20,6 @@ import com.squareup.picasso.Picasso;
 
 
 import java.util.ArrayList;
-import java.util.List;
 
 // Creating a custom adapter requires the following:
 //      1- Create a class that extends RecyclerView.Adapter

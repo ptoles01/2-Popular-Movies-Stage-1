@@ -2,7 +2,6 @@ package com.ptoles.popularmovies.utils;
 
 //https://www.specbee.com/blogs/android-tutorials-recyclerview-and-its-item-click-listener-part-1
 // https://gist.github.com/Isabellle/d66ccbc7e88dc8c9b3429cf3ea8b6d97
-import android.graphics.Movie;
 import android.view.View;
 
 import com.ptoles.popularmovies.model.MoviePoster;
