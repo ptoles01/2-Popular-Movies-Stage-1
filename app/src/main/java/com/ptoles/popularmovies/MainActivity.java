@@ -65,6 +65,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
 
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -98,8 +99,7 @@ public class MainActivity extends AppCompatActivity
 
     private TextView errorMessage;
 
-    private Parcelable layoutManagerState;
-    private Parcelable listState;
+    private static Parcelable layoutManagerState;
 
     private RecyclerView moviePosterRecyclerView;
     private static Bundle bundleRecyclerViewState;
@@ -178,6 +178,7 @@ public class MainActivity extends AppCompatActivity
     // https://proandroiddev.com/how-to-android-dagger-2-10-2-11-butterknife-mvp-part-1-eb0f6b970fd
     // https://www.youtube.com/watch?v=3Zrwi3FFrC8 - video regarding shared preferences
     //
+    static int recyclerViewTop;
 
 
     @Override
@@ -195,7 +196,6 @@ public class MainActivity extends AppCompatActivity
     //https://www.learnhowtoprogram.com/android/web-service-backends-and-custom-fragments/custom-adapters-with-recyclerview
     private void createMainActivity() {
         // ties variables to their corresponding widgets where appropriate
-
         setContentView(R.layout.activity_main);
             // display MainActivity
 
@@ -243,7 +243,7 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onItemClick(View recyclerView, int clickedPosition, ArrayList<MoviePoster> moviePosters) {
 
-
+                    recyclerViewTop = recyclerView.getTop();
                     moviePosition = clickedPosition; // the value of moviePosition will be saved in
                     // the bundle, so establish this equality now
                     // for when that happens later
@@ -275,20 +275,17 @@ public class MainActivity extends AppCompatActivity
 // TODO: 1- Make both align
 
         if (layoutManagerState != null) {
-            //moviePosterAdapter
-//            moviePosterRecyclerView.setAdapter(moviePosterAdapter);
-            moviePosterRecyclerView.getLayoutManager().onRestoreInstanceState(layoutManagerState);
-            moviePosterRecyclerView.setLayoutManager(moviePosterRecyclerView.getLayoutManager());
-            
+            //moviePosterLayoutManager
+            moviePosterLayoutManager.onRestoreInstanceState(layoutManagerState);
+            moviePosterRecyclerView.setLayoutManager(moviePosterLayoutManager);
+
         } else {
+
             moviePosterRecyclerView.setLayoutManager(moviePosterLayoutManager);
             moviePosterRecyclerView.scrollToPosition(moviePosition);
-        }
 
-        //Bundle bundle = (Bundle) outState;
-       // bundle.putParcelable(CONSTANTS.KEY_LIST_STATE, listState);
-       // bundle.putParcelable(CONSTANTS.KEY_LAYOUT_MANAGER_STATE, moviePosterRecyclerView.getLayoutManager().onSaveInstanceState());
-       // bundle.putParcelable(CONSTANTS.KEY_SUPER_STATE,bundle);
+           // https://newfivefour.com/android-restore-position-or-recyclerview.html
+        }
 
 
 
@@ -301,23 +298,7 @@ public class MainActivity extends AppCompatActivity
         //     SharedPreference has changed. Please note that we must unregister MainActivity as an
         //     OnSharedPreferenceChanged listener in onDestroy to avoid any memory leaks.
         //     the manager is  the place/resource/database to store the preferences
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // Set the orderBy key to be whatever is already indicated in the class
-        orderBy = sharedPreferences.getString(
-                getString(R.string.settings_order_by_key),
-                getString(R.string.settings_order_by_default));
-
-        // now register your listener for changes
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-
-        //sharedPreferencesEditor = sharedPreferences.edit();
-        // preferences you intend to store
-
-        //checkSharedPreferences(sharedPreferencesEditor);
+        setUpSharedPreferences();
 
         // 6 - Get a reference to the loader manager
         // Get a reference to the LoaderManager, in order to interact with loaders.
@@ -336,6 +317,21 @@ public class MainActivity extends AppCompatActivity
 
     }// end - internet is available
 
+    private void setUpSharedPreferences (){
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        // Set the orderBy key to be whatever is already indicated in the class
+        orderBy = sharedPreferences.getString(
+                getString(R.string.settings_order_by_key),
+                getString(R.string.settings_order_by_default));
+
+        // now register your listener for changes
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
+    }
 
     // 7 - Setup the main menu
 
@@ -420,7 +416,9 @@ public class MainActivity extends AppCompatActivity
             // Set empty state text to display "No movies available!"
             errorMessage.setText(R.string.no_movies_available);
         }
-
+        if (moviePosition != GridView.INVALID_POSITION) {
+            moviePosterRecyclerView.setScrollX(recyclerViewTop);
+        }
 
     }
 
@@ -488,8 +486,9 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
 
-        if (listState != null) {
-            moviePosterLayoutManager.onRestoreInstanceState(listState);
+
+        if (layoutManagerState != null) {
+            moviePosterLayoutManager.onRestoreInstanceState(layoutManagerState);
         }
 
     }
@@ -506,54 +505,18 @@ public class MainActivity extends AppCompatActivity
 
 // TODO: 2 - Make both align
     protected void onSaveInstanceState(Bundle outState) {
-       // listState = moviePosterRecyclerView.getLayoutManager().onSaveInstanceState();
+
         super.onSaveInstanceState(outState);
 
-        listState = moviePosterLayoutManager.onSaveInstanceState();
+        layoutManagerState = moviePosterLayoutManager.onSaveInstanceState();
 
         // Save currently selected layout manager.
 
-            outState.putParcelable(CONSTANTS.KEY_LIST_STATE, listState);
-
+            outState.putParcelable(CONSTANTS.KEY_LAYOUT_MANAGER_STATE,layoutManagerState);
 
 
     }
 
-    //https://gist.github.com/FrantisekGazo/a9cc4e18cee42199a287
-    protected void onRestoreInstanceState(Parcelable savedInstanceState) {
-
-        if(savedInstanceState != null) {
-            if (savedInstanceState instanceof Bundle) {
-                Bundle bundle = (Bundle)savedInstanceState;
-
-                layoutManagerState = bundle.getParcelable(CONSTANTS.KEY_LAYOUT_MANAGER_STATE);
-                 savedInstanceState= bundle.getParcelable(CONSTANTS.KEY_SAVED_INSTANCE_STATE);
-                //outState =  bundle.getParcelable(CONSTANTS.KEY_SUPER_STATE);
-
-                // If a layout manager has already been set, get current scroll position.
-                if (moviePosterRecyclerView.getLayoutManager() != null) {
-                    moviePosition = ((GridLayoutManager) moviePosterRecyclerView.getLayoutManager())
-
-                            .findFirstVisibleItemPosition();
-                            //.findFirstCompletelyVisibleItemPosition();
-                }
-
-
-                if (savedInstanceState != null) {
-                    moviePosterLayoutManager.onRestoreInstanceState(listState);
-
-                } else {
-                    moviePosterRecyclerView.setLayoutManager(moviePosterLayoutManager);
-                    moviePosterRecyclerView.scrollToPosition(moviePosition);
-                }
-
-                super.onRestoreInstanceState((Bundle) savedInstanceState);
-
-            }
-
-        }
-
-    }
 
 } // end of the class MainActivity.java
 

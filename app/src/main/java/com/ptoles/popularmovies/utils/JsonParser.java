@@ -1,7 +1,6 @@
 package com.ptoles.popularmovies.utils;
 
 //import android.support.v7.recyclerview.BuildConfig;
-import android.content.Loader;
 import android.text.TextUtils;
 import android.util.Log;
 
