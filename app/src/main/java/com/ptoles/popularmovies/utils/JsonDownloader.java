@@ -34,10 +34,6 @@ class JsonDownloader extends AsyncTaskLoader<List<MoviePoster>> {
                               // for an empty string
     private static List<MoviePoster> moviePosters;
 
-    private JsonDownloader(Context context) {
-        super(context);
-        moviePosters = new ArrayList<>();
-    }
 
     private JsonDownloader(Context context, String jsonData) {
         super(context);

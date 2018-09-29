@@ -10,6 +10,7 @@ public class MovieSortPreferences {
 
     static SharedPreferences sharedPreferences;
     static String sortOrderKey;
+    static String orderByKey;
     static String defaultSortOrder;
     static String currentSortOrder;
 
@@ -17,9 +18,17 @@ public class MovieSortPreferences {
 
     public static String getPreferredSortOrder(Context context) {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        sortOrderKey = context.getString(R.string.sort_order_key);
-        defaultSortOrder = CONSTANTS.DEFAULT_SORT_ORDER_KEY;
-        return sharedPreferences.getString(sortOrderKey, defaultSortOrder);
+
+        //TODO: Which to use: sortOrderKey or orderByKey?
+        //sortOrderKey = context.getString(R.string.sort_order_key);
+        orderByKey = CONSTANTS.DEFAULT_ORDER_BY_KEY;
+        //TODO: This is where the failure happens. We always but alway pass defaultSortOrder
+        // back to MainActivity
+        //defaultSortOrder = CONSTANTS.DEFAULT_SORT_ORDER_KEY;
+      //  defaultSortOrder = sharedPreferences.getString();
+        defaultSortOrder = CONSTANTS.DEFAULT_ORDER_BY_KEY;
+
+        return sharedPreferences.getString(orderByKey, defaultSortOrder);
     }
 
     public static void setCurrentSortOrder(Context context) {
@@ -30,7 +39,7 @@ public class MovieSortPreferences {
         editor.apply();
     }
 
-    public static void setPreferredSortOrder(Context context) {
+ /*   public static void setPreferredSortOrder(Context context) {
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -39,5 +48,5 @@ public class MovieSortPreferences {
 
         editor.apply();
     }
-
+*/
 }

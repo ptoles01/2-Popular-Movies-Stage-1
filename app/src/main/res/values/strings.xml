@@ -59,6 +59,7 @@
     <string name="pref_most_popular_key" translatable="false">popular</string>
     <!-- value in SharedPreferences for highest rated option [CHAR LIMIT=NONE] -->
     <string name="pref_highest_rated_key" translatable="false">top_rated</string>
+    <string name="settings_order_by_default">popular</string>
 
     <!-- - - - - - - - - - - -->
     <!--Used by SharedPreferences-->
@@ -108,7 +109,6 @@
 
         <string name="settings_order_by_label">Order By</string>
         <string name="settings_order_by_key" translatable="false">order_by</string>
-
         <string name="settings_order_most_popular">popular</string>
         <string name="settings_order_top_rated">top_rated</string>
 
@@ -118,14 +118,16 @@
         <string name="settings_menu_item">Settings</string>
         <!-- Settings Activity Title [CHAR LIMIT=NONE] -->
         <string name="settings_title">Movie Settings</string>
-        <string name="settings_order_by_default">@string/settings_order_most_popular</string>
 
         <string name="detail_activity_title">Movie Detail</string>
         <string name="movie_description" />
-        <string name="settings_order_by">Sort moviePosters by:</string>
+        <string name="settings_order_by">Sort Movies By:</string>
 
         <string name="preference_file_key">com.example.android.popularmovies.MovieDetail</string>
         <string name="movie_poster_description">Movie Poster</string>
+    <string name="LABEL_DETAILS_SYNOPSIS">Synopsis:</string>
+    <string name="LABEL_DETAILS_RATING">Rating: </string>
+    <string name="LABEL_DETAILS_RELEASED_DATE">Released: </string>
 
 
     <dimen name="grid_column_width">100dp</dimen>

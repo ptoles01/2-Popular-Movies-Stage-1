@@ -44,26 +44,20 @@ public class JsonParser {
 
 
     private static final String BASE_URL = "http://api.themoviedb.org/3/discover/movie?";
-    public static final String COMPLETE_URL = BASE_URL;
-
-    /*1*/  static String ImageURL = "https://api.themoviedb.org/3/movie/550?";
 
 
-    /* 2 */ final String SORT_BY_POPULARITY = "sort_by=popularity.desc&";
-    /* 3 */ final String SORT_BY_AVERAGE_RATING = "sort_by=vote_average.desc&";
+
     /* 5 */ final String API_KEY = "api_key=" + apiKey;
+
     public static final String topRatedUrl = "https://api.themoviedb.org/3/movie/top_rated?api_key="+apiKey;//"?&language=en-US";
 //    public static final String topRatedUrl = "https://api.themoviedb.org/3/movie?sort_by=top_rated.desc?api_key="+apiKey+"&language=en-US";
+
     public static final String mostPopularUrl = "https://api.themoviedb.org/3/movie/popular?api_key="+apiKey;//+"?&language=en-US";
  //   public static final String mostPopularUrl = "https://api.themoviedb.org/3/movie?sort_by=popularity.desc?api_key="+apiKey+"&language=en-US";
 
     public final static String URL_BASE = "http://api.themoviedb.org/3/discover/movie";
     // URL to query the movie database
-    private static final String MOVIE_MOST_POPULAR_URL =
-            "https://api.themoviedb.org/3/movie/popular?&api_key=[apiKey]";
 
-    private static final String MOVIE_TOP_RATED_URL =
-            "https://api.themoviedb.org/3/movie/top_rated?&api_key=[apiKey]";
 
     private static final String POSTER_URL = "http://image.tmdb.org/t/p/w185";
     private static final String BACKDROP_URL = "http://image.tmdb.org/t/p/original";
@@ -71,7 +65,6 @@ public class JsonParser {
     //final static String BASE_URL = "http://api.themoviedb.org/3/movie/";
     //TODO: add your API key Here
 
-    final static String BEFORE_API_KEY = "?api_key=";
 
     //            URL url = new URL("http://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=...");
     public static List<MoviePoster> parseMoviesFromJson(String jsonData) {

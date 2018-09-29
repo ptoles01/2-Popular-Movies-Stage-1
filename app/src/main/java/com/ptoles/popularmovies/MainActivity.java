@@ -49,7 +49,6 @@ import android.content.Loader;
 import android.app.LoaderManager;
 import android.content.SharedPreferences;
 
-import android.net.Uri;
 
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
@@ -66,7 +65,6 @@ import android.util.Log;
 
 
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -84,7 +82,8 @@ import com.ptoles.popularmovies.utils.NetworkUtils;
 import com.ptoles.popularmovies.utils.MovieSortPreferences;
 import com.ptoles.popularmovies.utils.OnItemClickListener;
 
-import static com.ptoles.popularmovies.utils.JsonParser.*;
+import static com.ptoles.popularmovies.utils.CONSTANTS.DEFAULT_ORDER_BY_KEY;
+
 
 public class MainActivity extends AppCompatActivity
         implements  LoaderManager.LoaderCallbacks<List<MoviePoster>>,
@@ -92,73 +91,37 @@ public class MainActivity extends AppCompatActivity
 
 
      private static final String TAG = MainActivity.class.getSimpleName();
-    private static int COUNT_ORDER = 1;
 
     private static final int MOVIE_LOADER_ID = 0;
-    public static final String CURRENT_POSITION = "position";
 
     private TextView errorMessage;
 
     private static Parcelable layoutManagerState;
 
     private RecyclerView moviePosterRecyclerView;
-    private static Bundle bundleRecyclerViewState;
-    private static String KEY_SAVED_SUPER_STATE = "savedSuperState";
-    private static String KEY_SAVED_RECYCLER_VIEW_DATASET = "MoviePosters";
 
     private MoviePosterAdapter moviePosterAdapter;
     private ArrayList<MoviePoster> moviePosters = new ArrayList<>();
 
 
-    public ArrayList<MoviePoster> getMoviePosters() {
-        return moviePosters;
-    }
-
-    public void setMoviePosters(ArrayList<MoviePoster> moviePosters) {
-        this.moviePosters = moviePosters;
-    }
-
-
-    OnItemClickListener moviePosterClickListener;
-    private String orderBy;
-
+// TODO: 1 - Check whether I am properly rewriting my orderBy throughout the application
+    private String orderBy = "";// initialized below in
+                                  // setupSharedPreferences
 
     private ProgressBar progressBar;
-
     SharedPreferences sharedPreferences;
-
     RecyclerView.LayoutManager moviePosterLayoutManager;
 
-    LoaderManager.LoaderCallbacks<MoviePoster> myLoaderCallbacks;
 
 
-    final static String BASE_URL = "http://api.themoviedb.org/3/movie/";
-    //TODO: add your API key Here
-    final static String API_KEY = apiKey;
-    final static String BEFORE_API_KEY = "?api_key=";
-
-    // URL to query the movie database
-    private static final String MOVIE_MOST_POPULAR_URL =
-            "https://api.themoviedb.org/3/movie/popular?&api_key=" + apiKey;
-
-    private static final String MOVIE_TOP_RATED_URL =
-            "https://api.themoviedb.org/3/movie/top_rated?&api_key=" + apiKey;
 
 
     private boolean isInternetAvailable() {
-        return NetworkUtils.getInstance(this).isNetworkAvailable();
-    }
-
-    public String apiKey() {
-        return JsonParser.COMPLETE_URL + apiKey;
+        NetworkUtils.getInstance(this);
+        return NetworkUtils.isNetworkAvailable();
     }
 
 
-    public ImageView getMoviePosterImageView() {
-        return moviePosterImageView;
-    }
-
-    private ImageView moviePosterImageView;
     //TODO: Define moviePosition as static so as to retain its value
     //      when we return
     private static int moviePosition=0;
@@ -243,7 +206,6 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onItemClick(View recyclerView, int clickedPosition, ArrayList<MoviePoster> moviePosters) {
 
-                    recyclerViewTop = recyclerView.getTop();
                     moviePosition = clickedPosition; // the value of moviePosition will be saved in
                     // the bundle, so establish this equality now
                     // for when that happens later
@@ -285,6 +247,7 @@ public class MainActivity extends AppCompatActivity
             moviePosterRecyclerView.scrollToPosition(moviePosition);
 
            // https://newfivefour.com/android-restore-position-or-recyclerview.html
+          //  https://stackoverflow.com/questions/38247602/android-how-can-i-get-current-positon-on-recyclerview-that-user-scrolled-to-item/52426802#52426802
         }
 
 
@@ -320,27 +283,23 @@ public class MainActivity extends AppCompatActivity
     private void setUpSharedPreferences (){
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // Set the orderBy key to be whatever is already indicated in the class
+
+        // Initialize the orderBy key to be whatever is already indicated in the class
+        //TODO: 2 - Our first use of orderBy and it overrides the "" value in the declarations above
+                // In this case, sharedpreferences is the bundle, and I'm getting the order_by string
+                // from the bundle. However, if no string exists default to the constant noted in
+                // the second parameter.
         orderBy = sharedPreferences.getString(
-                getString(R.string.settings_order_by_key),
-                getString(R.string.settings_order_by_default));
+                "order_by",
+                CONSTANTS.HIGHEST_RATED_ORDER_KEY); // TODO: 3 - if you don't find anything, use
+                                                    // highest rated???
+
 
         // now register your listener for changes
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
     }
 
-    // 7 - Setup the main menu
-
-    private void startPreferencesActivity(MoviePoster moviePoster) {
-
-        Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
-
-    }// end - startPreferencesActivity(int position)
 
 
     @Override
@@ -366,24 +325,38 @@ public class MainActivity extends AppCompatActivity
     @Override
     public Loader<List<MoviePoster>> onCreateLoader(int id, Bundle bundle) {
 
-        final String preferredSortOrder = MovieSortPreferences.getPreferredSortOrder(this);
-        final String mostPopularSortOrder = getString(R.string.settings_order_most_popular);
-        final String topRatedSortOrder = getString(R.string.settings_order_top_rated);
-        Uri moviePosterUri = null;
+        //TODO: 3 - change sort order here based on user menu selection in SettingsActivity
+        orderBy = MovieSortPreferences.getPreferredSortOrder(this);
+
         String moviePosterString = null;
 
-        switch(preferredSortOrder){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+
+        switch(orderBy){
 
             case "top_rated":
-                Log.d(TAG, "LoadInBackground: use URL for most popular");
-                moviePosterUri = Uri.parse(JsonParser.mostPopularUrl);
-                moviePosterString = JsonParser.mostPopularUrl;
+                Log.d(TAG, "LoadInBackground: use URL for highest rated");
+                moviePosterString = JsonParser.topRatedUrl;
+                editor.putString(DEFAULT_ORDER_BY_KEY, orderBy);// these are key-value pairs
+                // TODO: 4- Does this mean we are tracking what is to be shown on the
+                //           settings activity window?
+                editor.apply();
+                //PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+                        // TODO: 3 - sCan I rewrite the preferences.xml file???
+                        // Setting the readagain flag to true will ensure that
+                        // all unset-default values are set again. That's the summary.
+                        // https://stackoverflow.com/questions/10578501/
+                //         preferencemanager-setdefaultvalues-readagain-parameter-and-new-preferences
                 break;
 
             case "popular":
-                Log.d(TAG, "LoadInBackground: use URL for highest rated");
-                moviePosterUri = Uri.parse(JsonParser.topRatedUrl);
-                moviePosterString = JsonParser.topRatedUrl;
+                Log.d(TAG, "LoadInBackground: use URL for most popular");
+
+                moviePosterString = JsonParser.mostPopularUrl;
+                editor.putString(DEFAULT_ORDER_BY_KEY, orderBy);// these are key-value pairs
+                editor.apply();
+
                 break;
 
         }
@@ -403,7 +376,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         // Hide(i.e. setVisibility(View.GONE) ) the progressBar since the data has finished loading
-        if (moviePosters != null && !moviePosters.isEmpty()) {//call a public method from here
+        if (!moviePosters.isEmpty()) {//call a public method from here
 
             moviePosterAdapter.updateMovies((ArrayList<MoviePoster>) moviePosters);
 
@@ -433,42 +406,57 @@ public class MainActivity extends AppCompatActivity
     @Override
     // 5 - Setup shared preferences re: sort order
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        SharedPreferences.Editor editor = getSharedPreferences(key, MODE_PRIVATE).edit();
 
-        final String defaultSortOrder  = "@string/settings_order_by_default";
+
+        String value= sharedPreferences.getString(key, getString(R.string.settings_order_by));
+                // this value was stored in the Settings Activity and is being read here
+
         final String mostPopularSortOrder  = "@string/pref_most_popular_key";
         final String topRatedSortOrder = "@string/pref_top_rated_key";
 
-        String currentSortOrder = sharedPreferences.getString(key, orderBy);
-        String previousSortOrder;
-        String newSortOrder = null;
 
-        boolean PREFERENCES_UPDATED = (!currentSortOrder.equals(defaultSortOrder));
+        boolean PREFERENCES_UPDATED = ( value.equals(getString(R.string.settings_order_top_rated)) ||
+                                        value.equals(getString(R.string.settings_order_most_popular)) ) ;
 
         if(PREFERENCES_UPDATED) {
+            if (!value.equals(orderBy)) {//this is for efficiency. should value != orderby(i.e. the
+                                        // default sort mode), perform the load below. Should they
+                                        // match, there is no need to reload
 
-            switch (currentSortOrder) {
+                orderBy = null;  // because of the test above, we know that orderBy has changed
+                orderBy = value; // so reset its value here as it represents the default for the app
+                LoaderManager loaderManager = getLoaderManager();
 
-                case "top_rated":
-                    orderBy = mostPopularSortOrder;
-                    newSortOrder= mostPopularSortOrder;
-                    break;
+                PREFERENCES_UPDATED = false;
 
-                case "popular":
-                    orderBy = topRatedSortOrder;
-                    newSortOrder= topRatedSortOrder;
-                    break;
+                switch (orderBy) {
 
-                default:
+                    case "top_rated":
+                        orderBy = topRatedSortOrder;
 
-                    break;
+                        //put in bundle
+                        editor.putString(DEFAULT_ORDER_BY_KEY, topRatedSortOrder);
+                        editor.apply();
+                        loaderManager.restartLoader(MOVIE_LOADER_ID, null, this);
+
+                        break;
+
+                    case "popular":
+                        orderBy = mostPopularSortOrder;
+                        //put in bundle
+                        editor.putString(DEFAULT_ORDER_BY_KEY, mostPopularSortOrder);
+                        editor.apply();
+                        loaderManager.restartLoader(MOVIE_LOADER_ID, null, this);
+                        break;
+
+                    default:
+
+                        break;
+                }
             }
 
-            android.app.LoaderManager loaderManager = getLoaderManager();
-            loaderManager.restartLoader(MOVIE_LOADER_ID, null,  this);
-
-            PREFERENCES_UPDATED = false;
         }
-
     }
 
 
@@ -503,7 +491,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-// TODO: 2 - Make both align
     protected void onSaveInstanceState(Bundle outState) {
 
         super.onSaveInstanceState(outState);
@@ -516,7 +503,10 @@ public class MainActivity extends AppCompatActivity
 
 
     }
+    @Override
+    public void onBackPressed() {
 
-
+        //do nothing....
+    }
 } // end of the class MainActivity.java
 

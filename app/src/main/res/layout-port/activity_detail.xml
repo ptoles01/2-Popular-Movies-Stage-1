@@ -42,7 +42,7 @@ tools:context=".DetailActivity">
              android:id="@+id/release_date_tv"
              android:layout_width="wrap_content"
              android:layout_height="wrap_content"
-             android:paddingBottom="8dp"
+             android:paddingBottom="0dp"
              android:paddingEnd="16dp"
              android:paddingStart="16dp"
              android:textColor="@color/colorPrimary"
@@ -53,10 +53,13 @@ tools:context=".DetailActivity">
     android:layout_height="wrap_content"
     android:orientation="horizontal">
 
-<RatingBar
-        android:id="@+id/ratingBar"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
+    <RatingBar
+        android:id="@+id/rating_bar"
+        style="@style/CustomRatingBarPortrait"
+        android:layout_width="160dp"
+        android:layout_height="35dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginStart="24dp"
         android:clickable="false"
         android:isIndicator="true"
         android:numStars="5"
@@ -73,6 +76,15 @@ tools:context=".DetailActivity">
         tools:text="7/10" />
 </LinearLayout>
 
+         <ScrollView
+             android:id="@+id/scrollView"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:fadeScrollbars="false"
+             android:paddingRight="16dp"
+             android:paddingEnd="16dp"
+             android:paddingTop="10dp"
+             android:scrollbarSize="150dp">
 
          <TextView
              android:id="@+id/overview_tv"
@@ -83,6 +95,9 @@ tools:context=".DetailActivity">
              android:text="movie synopsis goes here"
              android:textColor="@color/colorPrimary"
              tools:text="Captain Etienne Navarre is a man on whose shoulders lies a cruel curse. Punished for loving each other, Navarre must become a wolf by night whilst his lover, Lady Isabeau, takes the form of a hawk by day. Together…" />
+
+         </ScrollView>
+
      </LinearLayout>
 
 </RelativeLayout>
