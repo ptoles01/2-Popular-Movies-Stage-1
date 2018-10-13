@@ -25,6 +25,36 @@ public class CONSTANTS {
     public static final String KEY_DEFAULT_SORT_ORDER_STATE = "DefaultSortOrder";
 
 
+    //Movie Poster field names
+    public static final String MOVIE_POSTER_RESULTS_KEY       = "results";
+    public static final String MOVIE_REVIEW_RESULTS_KEY       = "results";
+    public static final String MOVIE_TRAILER_RESULTS_KEY      = "results";
+
+    public static final String GENRE_IDS_KEY          = "genre_ids";
+    public static final String BACKDROP_PATH_KEY      = "backdrop_path";
+    public static final String POSTER_PATH_KEY        = "poster_path";
+    public static final String ORIGINAL_TITLE_KEY     = "original_title";
+    public static final String VOTE_AVERAGE_KEY       = "vote_average";
+    public static final String OVERVIEW_KEY           = "overview";
+    public static final String VOTE_COUNT_KEY         = "vote_count";
+    public static final String MOVIE_POSTER_ID_KEY    = "id";
+    public static final String HAS_VIDEO_KEY          = "video";
+    public static final String MOVIE_POSTER_TITLE_KEY = "title";
+    public static final String POPULARITY_KEY         = "popularity";
+    public static final String ORIGINAL_LANGUAGE_KEY  = "original_language";
+    public static final String IS_ADULT_KEY           = "adult";
+    public static final String RELEASE_DATE_KEY       = "release_date";
+
+    //Movie Review field names
+    public static final String AUTHOR_KEY             = "author";
+    public static final String CONTENT_KEY            = "content";
+    public static final String MOVIE_REVIEW_URL_KEY   = "url";
+
+    /*
+                    List<Integer> genreIdsList = new ArrayList<>();
+                    List<String> resultsArrayList = new ArrayList<>();
+
+     */
     final static String BASE_URL = "http://api.themoviedb.org/3/movie/";
     //TODO: add your API key Here
     final static String API_KEY = apiKey;

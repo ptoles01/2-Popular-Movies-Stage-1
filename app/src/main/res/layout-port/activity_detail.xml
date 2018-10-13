@@ -27,6 +27,7 @@ tools:context=".DetailActivity">
              tools:text="Image" />
 
 
+
          <TextView
              android:id="@+id/original_title_tv"
              android:layout_width="match_parent"
@@ -57,7 +58,7 @@ tools:context=".DetailActivity">
         android:id="@+id/rating_bar"
         style="@style/CustomRatingBarPortrait"
         android:layout_width="160dp"
-        android:layout_height="35dp"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
         android:layout_marginStart="24dp"
         android:clickable="false"
@@ -98,6 +99,8 @@ tools:context=".DetailActivity">
 
          </ScrollView>
 
+
+
      </LinearLayout>
 
-</RelativeLayout>
+    </RelativeLayout>

@@ -141,7 +141,6 @@ public class MainActivity extends AppCompatActivity
     // https://proandroiddev.com/how-to-android-dagger-2-10-2-11-butterknife-mvp-part-1-eb0f6b970fd
     // https://www.youtube.com/watch?v=3Zrwi3FFrC8 - video regarding shared preferences
     //
-    static int recyclerViewTop;
 
 
     @Override
@@ -210,6 +209,9 @@ public class MainActivity extends AppCompatActivity
                     // the bundle, so establish this equality now
                     // for when that happens later
 
+                    if (moviePosition == GridView.INVALID_POSITION) {
+                        moviePosition= 0;
+                    }
                     Context moviePosterContext = recyclerView.getContext();
 
                     MoviePoster currentMovie = moviePosters.get(moviePosition);
@@ -217,9 +219,12 @@ public class MainActivity extends AppCompatActivity
                     Intent detailActivityIntent = new Intent(moviePosterContext, DetailActivity.class);
                     
 
-                    String voteAverageString = String.valueOf(new StringBuilder().append(currentMovie.getVoteAverage()).append("/10"));
+                    String voteAverageString = String.valueOf(new StringBuilder()
+                            .append(currentMovie.getVoteAverage())
+                            .append("/10"));
 
                     detailActivityIntent.putExtra("moviePosition",moviePosition );
+                    detailActivityIntent.putExtra("movieId",currentMovie.getMovieId() );
 
                     detailActivityIntent.putExtra("backdropPath",currentMovie.getBackdropPath() );
                     detailActivityIntent.putExtra("originalTitle",currentMovie.getOriginalTitle() );
@@ -359,6 +364,15 @@ public class MainActivity extends AppCompatActivity
 
                 break;
 
+            case "favorites":
+                Log.d(TAG, "LoadInBackground: use URL for user favorites");
+
+                moviePosterString = JsonParser.favoritesUrl;
+                editor.putString(DEFAULT_ORDER_BY_KEY, orderBy);// these are key-value pairs
+                editor.apply();
+
+                break;
+
         }
 
         return new MoviePosterLoader(this, moviePosterString);
@@ -390,7 +404,8 @@ public class MainActivity extends AppCompatActivity
             errorMessage.setText(R.string.no_movies_available);
         }
         if (moviePosition != GridView.INVALID_POSITION) {
-            moviePosterRecyclerView.setScrollX(recyclerViewTop);
+            //TODO: No magic numbers....
+            moviePosterRecyclerView.scrollToPosition(moviePosition);
         }
 
     }
@@ -414,10 +429,13 @@ public class MainActivity extends AppCompatActivity
 
         final String mostPopularSortOrder  = "@string/pref_most_popular_key";
         final String topRatedSortOrder = "@string/pref_top_rated_key";
+        final String favoritesSortOrder = "@string/pref_top_rated_key";
 
 
         boolean PREFERENCES_UPDATED = ( value.equals(getString(R.string.settings_order_top_rated)) ||
-                                        value.equals(getString(R.string.settings_order_most_popular)) ) ;
+                                        value.equals(getString(R.string.settings_order_most_popular)) ||
+                                        value.equals("favorites")
+        ) ;
 
         if(PREFERENCES_UPDATED) {
             if (!value.equals(orderBy)) {//this is for efficiency. should value != orderby(i.e. the
@@ -446,6 +464,14 @@ public class MainActivity extends AppCompatActivity
                         orderBy = mostPopularSortOrder;
                         //put in bundle
                         editor.putString(DEFAULT_ORDER_BY_KEY, mostPopularSortOrder);
+                        editor.apply();
+                        loaderManager.restartLoader(MOVIE_LOADER_ID, null, this);
+                        break;
+
+                    case "favorites":
+                        orderBy = favoritesSortOrder;
+                        //put in bundle
+                        editor.putString(DEFAULT_ORDER_BY_KEY, favoritesSortOrder);
                         editor.apply();
                         loaderManager.restartLoader(MOVIE_LOADER_ID, null, this);
                         break;

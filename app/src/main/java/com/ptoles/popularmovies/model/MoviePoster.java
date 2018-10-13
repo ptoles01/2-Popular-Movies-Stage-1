@@ -30,7 +30,7 @@ public class MoviePoster implements Parcelable{
     private Double voteCount;
     private String releaseDate;
 
-    private String id;
+    private String movieId;
     private Boolean video;
     private String voteAverage; //(called vote_average in the api)
     private String title;
@@ -44,14 +44,14 @@ public class MoviePoster implements Parcelable{
 
 
     // All argument constructor
-    public MoviePoster(Double voteCount,        String id,                Boolean video,
+    public MoviePoster(Double voteCount,        String movieId,           Boolean video,
                        String voteAverage,      String title,             String popularity,
                        String posterPath,       String originalLanguage,  String originalTitle,
                        List<Integer> genreIDs,  String backdropPath,      Boolean adult,
                        String overview,         String releaseDate
     )
     {
-    this.voteCount     = voteCount;             this.id               = id;
+    this.voteCount     = voteCount;             this.movieId          = movieId;
     this.video         = video;                 this.voteAverage      = voteAverage;
     this.title         = title;                 this.popularity       = popularity;
     this.posterPath    = posterPath;            this.originalLanguage = originalLanguage;
@@ -72,7 +72,7 @@ public class MoviePoster implements Parcelable{
             voteCount = source.readDouble();
         }
 
-        id = source.readString();
+        movieId = source.readString();
         byte tmpVideo = source.readByte();
         video = tmpVideo == 0 ? null : tmpVideo == 1;
         voteAverage = source.readString();
@@ -112,8 +112,8 @@ public class MoviePoster implements Parcelable{
     public Double getVoteCount() {return voteCount;}
     public void setVoteCount(Double voteCount) {this.voteCount = voteCount;}
 
-    public String getId() {return id;}
-    public void setId(String id) {this.id = id;}
+    public String getMovieId() {return movieId;}
+    public void setMovieId(String id) {this.movieId = movieId;}
 
     public Boolean getVideo() {
         return video;
@@ -223,7 +223,7 @@ public class MoviePoster implements Parcelable{
             parcel.writeByte((byte) 1);
             parcel.writeDouble(voteCount);
         }
-        parcel.writeString(id);
+        parcel.writeString(movieId);
         parcel.writeByte((byte) (video == null ? 0 : video ? 1 : 2));
         parcel.writeString(voteAverage);
         parcel.writeString(title);
@@ -244,4 +244,25 @@ public class MoviePoster implements Parcelable{
         parcel.writeString(overview);
         parcel.writeString(releaseDate);
     }
+
+    @Override
+    public String toString() {
+        return "MoviePoster{" +
+                "movieId='" + movieId + '\'' +
+                ", voteAverage='" + voteAverage + '\'' +
+                ", voteCount='" + voteCount + '\'' +
+                ", title='" + title + '\'' +
+                ", popularity='" + popularity + '\'' +
+                ", posterPath='" + posterPath + '\'' +
+                ", originalLanguage='" + originalLanguage + '\'' +
+                ", originalTitle='" + originalTitle + '\'' +
+                ", backdropPath='" + backdropPath + '\'' +
+                ", adult='" +  (adult == null ? 0 : adult ? 1 : 2)+ '\'' +
+                ", video='" +  (video == null ? 0 : video ? 1 : 2)+ '\'' +
+                ", overview='" + overview + '\'' +
+                ", releaseDate='" + releaseDate + '\'' +
+                '}';
+        }
+
+
 }

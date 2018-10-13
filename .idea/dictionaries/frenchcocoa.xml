@@ -4,16 +4,22 @@
       <w>arraylist</w>
       <w>asynctask</w>
       <w>asynctaskloader</w>
+      <w>dataset</w>
+      <w>forceload</w>
       <w>getop</w>
+      <w>gson</w>
       <w>isabeau</w>
       <w>jsondata</w>
       <w>ladyhawke</w>
       <w>movieposter</w>
       <w>movieposters</w>
       <w>popularmovies</w>
+      <w>recyclerview</w>
       <w>sanjeevy</w>
+      <w>sharedpreferences</w>
       <w>tmdb</w>
       <w>unmarshalling</w>
+      <w>viewholder</w>
     </words>
   </dictionary>
 </component>

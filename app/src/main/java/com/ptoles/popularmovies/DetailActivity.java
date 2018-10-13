@@ -38,6 +38,7 @@ public class DetailActivity extends AppCompatActivity {
         if (intent != null) {
 
             //int moviePosition = intent.getIntExtra("moviePosition", 0);
+            String movieId = intent.getStringExtra("movieId");
             String originalTitle = intent.getStringExtra("originalTitle");
             Float rating = Float.valueOf(intent.getStringExtra("rating"));
             RatingBar ratingBar = findViewById(R.id.rating_bar);
